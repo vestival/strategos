@@ -34,6 +34,11 @@ export function runFifo(events: LotEvent[]): Record<string, AssetLotSummary> {
   const summaryByAsset = new Map<string, AssetLotSummary>();
 
   for (const event of sorted) {
+    // Ignore zero/invalid quantities to avoid 0/0 cost-per-unit math.
+    if (!Number.isFinite(event.amount) || event.amount <= 0) {
+      continue;
+    }
+
     const key = event.assetId === null ? "ALGO" : String(event.assetId);
     if (!summaryByAsset.has(key)) {
       summaryByAsset.set(key, {
@@ -57,6 +62,10 @@ export function runFifo(events: LotEvent[]): Record<string, AssetLotSummary> {
         continue;
       }
       const totalCost = event.amount * event.unitPriceUsd + event.feeUsd;
+      if (!Number.isFinite(totalCost)) {
+        summary.hasPriceGaps = true;
+        continue;
+      }
       lots.push({
         qty: event.amount,
         costPerUnitUsd: totalCost / event.amount
@@ -84,6 +93,10 @@ export function runFifo(events: LotEvent[]): Record<string, AssetLotSummary> {
     }
 
     const proceeds = event.amount * event.unitPriceUsd - event.feeUsd;
+    if (!Number.isFinite(proceeds)) {
+      summary.hasPriceGaps = true;
+      continue;
+    }
     summary.realizedPnlUsd += proceeds - disposedCost;
   }
 

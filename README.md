@@ -44,6 +44,8 @@ Optional:
 - `ALGORAND_ALGOD_TOKEN`
 - `PRICE_API_URL`
 - `ASA_PRICE_MAP_JSON`
+  - Optional overrides/additions for ASA -> CoinGecko ID mapping.
+  - Built-in defaults already cover common assets (USDC, USDt, goBTC, goETH, gALGO, tALGO, xALGO).
 - `TINYMAN_APP_IDS`
 - `FOLKS_APP_IDS`
 - `RETI_APP_IDS`

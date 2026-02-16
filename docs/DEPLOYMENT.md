@@ -36,6 +36,7 @@ Add these in Vercel: Project -> Settings -> Environment Variables
   - Example: `https://api.coingecko.com/api/v3/simple/price`
 - `ASA_PRICE_MAP_JSON`
   - Example: `{"31566704":"usd-coin","312769":"tether"}`
+  - Note: app includes built-in defaults for common ASAs; this var is for overrides/extensions.
 - `TINYMAN_APP_IDS`
   - Example: `552635992,1002541853`
 - `FOLKS_APP_IDS`

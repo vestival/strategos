@@ -3,13 +3,27 @@ import { getEnv } from "@/lib/env";
 const env = getEnv();
 
 const ALGO_CG_ID = "algorand";
+const DEFAULT_ASA_CG_MAP: Record<number, string> = {
+  // Stablecoins
+  31566704: "usd-coin", // USDC (Algorand)
+  312769: "tether", // USDt (Algorand)
+  // Wrapped majors
+  386192725: "bitcoin", // goBTC
+  386195940: "ethereum", // goETH
+  // Liquid staking / staking derivatives
+  793124631: "algorand", // gALGO
+  694432641: "algorand", // gALGO3
+  2537013734: "algorand", // tALGO
+  2537013737: "algorand", // tALGO-related asset in ecosystem
+  1134696561: "xalgo" // xALGO
+};
 
 type PriceMap = Record<string, { usd: number }>;
 
 function parseAsaMap(): Record<number, string> {
+  const map: Record<number, string> = { ...DEFAULT_ASA_CG_MAP };
   try {
     const parsed = JSON.parse(env.ASA_PRICE_MAP_JSON) as Record<string, string>;
-    const map: Record<number, string> = {};
     for (const [assetId, id] of Object.entries(parsed)) {
       const n = Number(assetId);
       if (Number.isInteger(n) && id) {
@@ -18,7 +32,7 @@ function parseAsaMap(): Record<number, string> {
     }
     return map;
   } catch {
-    return {};
+    return map;
   }
 }
 
