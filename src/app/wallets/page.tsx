@@ -51,6 +51,7 @@ function fromBase64(base64: string): Uint8Array {
 
 export default function WalletsPage() {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
+  const [availableAccounts, setAvailableAccounts] = useState<string[]>([]);
   const [peraWallet, setPeraWallet] = useState<PeraWallet | null>(null);
   const [statusText, setStatusText] = useState<string>("");
 
@@ -131,13 +132,15 @@ export default function WalletsPage() {
         return;
       }
 
-      const addr = accounts[0];
+      const linked = new Set((walletsQuery.data?.wallets ?? []).map((w) => w.address));
+      const addr = accounts.find((account) => !linked.has(account)) ?? accounts[0];
       if (!algosdk.isValidAddress(addr)) {
         setStatusText("Wallet returned invalid address");
         return;
       }
 
       setPeraWallet(wallet);
+      setAvailableAccounts(accounts);
       setConnectedAddress(addr);
       setStatusText("Wallet connected.");
     } catch (error) {
@@ -150,6 +153,7 @@ export default function WalletsPage() {
       await peraWallet?.disconnect?.();
     } finally {
       setPeraWallet(null);
+      setAvailableAccounts([]);
       setConnectedAddress(null);
       setStatusText("Wallet disconnected.");
     }
@@ -187,6 +191,25 @@ export default function WalletsPage() {
           <div className="mt-4 rounded-md border border-slate-800 bg-slate-950 p-3 text-sm">
             <div className="text-slate-400">Connected wallet</div>
             <div className="font-medium">{connectedAddress ? shortAddress(connectedAddress) : "Not connected"}</div>
+            {availableAccounts.length > 1 && (
+              <div className="mt-2">
+                <label className="mb-1 block text-xs text-slate-400" htmlFor="wallet-account-select">
+                  Select account
+                </label>
+                <select
+                  id="wallet-account-select"
+                  className="w-full rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100"
+                  onChange={(e) => setConnectedAddress(e.target.value)}
+                  value={connectedAddress ?? ""}
+                >
+                  {availableAccounts.map((account) => (
+                    <option key={account} value={account}>
+                      {account}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {connectedAddress && (
               <div className="mt-1 text-xs text-slate-400">
                 {connectedAlreadyVerified ? "This wallet is already verified." : "This wallet is not linked yet."}
