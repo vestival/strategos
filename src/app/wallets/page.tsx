@@ -28,6 +28,7 @@ type LinkResponse = {
 
 type PeraWallet = {
   connect: () => Promise<string[]>;
+  reconnectSession?: () => Promise<string[]>;
   disconnect?: () => Promise<void>;
   signTransaction: (txGroups: unknown, signerAddress?: string) => Promise<Uint8Array[]>;
 };
@@ -119,16 +120,28 @@ export default function WalletsPage() {
       const mod = await import("@perawallet/connect");
       const PeraWalletConnect = mod.PeraWalletConnect;
 
+      const wallet = new PeraWalletConnect() as unknown as PeraWallet;
+      let accounts: string[] = [];
+
       // Force fresh account picker so users can link multiple wallets.
       if (peraWallet?.disconnect) {
         await peraWallet.disconnect();
       }
 
-      const wallet = new PeraWalletConnect() as unknown as PeraWallet;
-      const accounts = await wallet.connect();
+      try {
+        accounts = await wallet.connect();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (message.toLowerCase().includes("session currently connected") && wallet.reconnectSession) {
+          accounts = await wallet.reconnectSession();
+        } else {
+          throw error;
+        }
+      }
 
       if (!accounts.length) {
-        setStatusText("No wallet account returned");
+        setPeraWallet(wallet);
+        setStatusText("No wallet account returned. If Pera is already connected, use Disconnect and try again.");
         return;
       }
 
@@ -150,7 +163,14 @@ export default function WalletsPage() {
 
   async function disconnectPeraWallet() {
     try {
-      await peraWallet?.disconnect?.();
+      if (peraWallet?.disconnect) {
+        await peraWallet.disconnect();
+      } else {
+        const mod = await import("@perawallet/connect");
+        const PeraWalletConnect = mod.PeraWalletConnect;
+        const wallet = new PeraWalletConnect() as unknown as PeraWallet;
+        await wallet.disconnect?.();
+      }
     } finally {
       setPeraWallet(null);
       setAvailableAccounts([]);
@@ -176,11 +196,11 @@ export default function WalletsPage() {
               onClick={connectPeraWallet}
               type="button"
             >
-              {connectedAddress ? "Switch wallet" : "Connect Pera Wallet"}
+              {connectedAddress ? "Switch wallet" : "Connect wallet"}
             </button>
             <button
               className="rounded-md border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800 disabled:opacity-60"
-              disabled={!connectedAddress}
+              disabled={!connectedAddress && !peraWallet}
               onClick={disconnectPeraWallet}
               type="button"
             >
