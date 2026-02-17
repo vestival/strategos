@@ -5,6 +5,8 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 ## [Unreleased]
 
 ### Added
+- Self-service account deletion in Settings via secure `DELETE /api/account` endpoint plus UI danger-zone action (with confirmation), cascading removal of linked wallets/snapshots/sessions through Prisma relations (2026-02-17 09:06 MST)
+- Unit tests for account deletion service covering success and missing-user behavior (`tests/account-delete.test.ts`) (2026-02-17 09:06 MST)
 - UX redesign of dashboard top bar: compact control cluster with eye privacy toggle, streamlined language switch, and cleaner spacing to reduce action overload (2026-02-17 08:40 MST)
 - New account dropdown menu (email, manage wallets, sign out) replacing the prior always-visible user/email/sign-out row in dashboard header (2026-02-17 08:40 MST)
 - Settings tab now includes a dedicated wallet management section with CTA to open `/wallets` (2026-02-17 08:40 MST)

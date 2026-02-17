@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import { useState } from "react";
 
 import { UserMenu } from "@/components/auth-buttons";
@@ -98,6 +99,12 @@ export function DashboardClient() {
     mutationFn: () => apiFetch<{ ok: boolean }>("/api/portfolio/refresh", { method: "POST", body: "{}" }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["portfolio-snapshot"] });
+    }
+  });
+  const deleteAccountMutation = useMutation({
+    mutationFn: () => apiFetch<{ ok: boolean }>("/api/account", { method: "DELETE" }),
+    onSuccess: async () => {
+      await signOut({ callbackUrl: "/" });
     }
   });
 
@@ -546,6 +553,30 @@ export function DashboardClient() {
                 <Link className="rounded-md bg-brand-600 px-3 py-2 text-sm text-white hover:bg-brand-700" href="/wallets">
                   {m.dashboard.settings.openWalletMgmt}
                 </Link>
+              </div>
+            </div>
+            <div className="mb-4 rounded-md border border-rose-300/60 bg-rose-50/40 p-3 dark:border-rose-800 dark:bg-rose-950/20">
+              <div className="font-medium text-rose-800 dark:text-rose-300">{m.dashboard.settings.dangerZone}</div>
+              <div className="mt-1 text-slate-600 dark:text-slate-300">{m.dashboard.settings.deleteAccountDesc}</div>
+              <div className="mt-3">
+                <button
+                  className="rounded-md border border-rose-300 px-3 py-2 text-sm text-rose-700 hover:bg-rose-100 disabled:opacity-60 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-900/40"
+                  disabled={deleteAccountMutation.isPending}
+                  onClick={() => {
+                    if (!window.confirm(m.dashboard.settings.deleteAccountConfirm)) {
+                      return;
+                    }
+                    deleteAccountMutation.mutate();
+                  }}
+                  type="button"
+                >
+                  {deleteAccountMutation.isPending ? m.dashboard.settings.deletingAccount : m.dashboard.settings.deleteAccount}
+                </button>
+                {deleteAccountMutation.isError && (
+                  <p className="mt-2 text-xs text-rose-700 dark:text-rose-300">
+                    {m.dashboard.settings.deleteAccountFailed} {(deleteAccountMutation.error as Error)?.message ?? ""}
+                  </p>
+                )}
               </div>
             </div>
             <div className="border-t border-slate-200 pt-4 dark:border-slate-800">{m.dashboard.settings.fifo}</div>

@@ -115,7 +115,13 @@ export const messages = {
         fifo: "Cost basis method: FIFO. Average-cost mode is designed for a future extension.",
         walletMgmt: "Wallet management",
         walletMgmtDesc: "Link, verify, and remove wallets from your profile.",
-        openWalletMgmt: "Open wallet management"
+        openWalletMgmt: "Open wallet management",
+        dangerZone: "Danger zone",
+        deleteAccount: "Delete account",
+        deletingAccount: "Deleting account...",
+        deleteAccountDesc: "Permanently deletes your user, linked wallets, snapshots, sessions, and audit records.",
+        deleteAccountConfirm: "Delete your account permanently? This action cannot be undone.",
+        deleteAccountFailed: "Account deletion failed."
       },
       footer: {
         lastSnapshot: "Last snapshot",
@@ -279,7 +285,13 @@ export const messages = {
         fifo: "Metodo de costo base: FIFO. El modo promedio se deja para una extension futura.",
         walletMgmt: "Gestion de wallets",
         walletMgmtDesc: "Vincula, verifica y elimina wallets de tu perfil.",
-        openWalletMgmt: "Abrir gestion de wallets"
+        openWalletMgmt: "Abrir gestion de wallets",
+        dangerZone: "Zona de peligro",
+        deleteAccount: "Eliminar cuenta",
+        deletingAccount: "Eliminando cuenta...",
+        deleteAccountDesc: "Elimina permanentemente tu usuario, wallets vinculadas, snapshots, sesiones y logs de auditoria.",
+        deleteAccountConfirm: "Eliminar tu cuenta de forma permanente? Esta accion no se puede deshacer.",
+        deleteAccountFailed: "No se pudo eliminar la cuenta."
       },
       footer: {
         lastSnapshot: "Ultimo snapshot",
