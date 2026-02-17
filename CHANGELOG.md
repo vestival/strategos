@@ -10,6 +10,8 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
   - All pages converted to dual-mode: landing, dashboard, wallets, auth buttons
   - Preference persists in localStorage; defaults to dark; respects OS `prefers-color-scheme`
   - No flash of wrong theme on page load via `next-themes` inline script
+- Wallet deletion flow: secure `DELETE /api/wallets/[walletId]` endpoint plus Wallet Linking UI "Remove" action so users can unlink wallets after adding them (2026-02-17 04:46 MST)
+- Unit test coverage for wallet deletion ownership/404 rules via a dedicated deletion service (`tests/wallet-delete.test.ts`) (2026-02-17 04:46 MST)
 
 ### Changed
 - Complete rewrite of README.md with architecture diagram, annotated project structure, environment variable tables, expanded feature descriptions, and security documentation

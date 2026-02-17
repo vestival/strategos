@@ -78,6 +78,30 @@ export default function WalletsPage() {
     }
   });
 
+  const deleteWalletMutation = useMutation({
+    mutationFn: (walletId: string) =>
+      apiFetch<{ ok: boolean }>(`/api/wallets/${walletId}`, {
+        method: "DELETE"
+      }),
+    onSuccess: async (_data, walletId) => {
+      const deletedWallet = walletsQuery.data?.wallets.find((w) => w.id === walletId);
+      const deletedAddress = deletedWallet?.address ?? null;
+
+      if (deletedAddress && connectedAddress === deletedAddress) {
+        setConnectedAddress(null);
+      }
+      if (deletedAddress) {
+        setAvailableAccounts((prev) => prev.filter((account) => account !== deletedAddress));
+      }
+      await queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      await queryClient.invalidateQueries({ queryKey: ["portfolio-snapshot"] });
+      setStatusText("Wallet removed.");
+    },
+    onError: (error) => {
+      setStatusText(error instanceof Error ? error.message : "Failed to remove wallet");
+    }
+  });
+
   const linkMutation = useMutation({
     mutationFn: () => apiFetch<LinkResponse>("/api/wallets/link", { method: "POST", body: JSON.stringify({ address: connectedAddress }) }),
     onSuccess: async (data) => {
@@ -265,9 +289,24 @@ export default function WalletsPage() {
           <h2 className="mb-3 text-lg font-medium">Linked wallets</h2>
           <div className="space-y-2">
             {walletsQuery.data?.wallets.map((wallet) => (
-              <div className="rounded-md border border-slate-200 p-3 text-sm dark:border-slate-800" key={wallet.id}>
-                <div className="font-medium">{shortAddress(wallet.address)}</div>
-                <div className="text-slate-500 dark:text-slate-400">Status: {wallet.verifiedAt ? "Verified" : "Pending verification"}</div>
+              <div className="flex items-start justify-between gap-3 rounded-md border border-slate-200 p-3 text-sm dark:border-slate-800" key={wallet.id}>
+                <div>
+                  <div className="font-medium">{shortAddress(wallet.address)}</div>
+                  <div className="text-slate-500 dark:text-slate-400">Status: {wallet.verifiedAt ? "Verified" : "Pending verification"}</div>
+                </div>
+                <button
+                  className="rounded-md border border-rose-300 px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-50 disabled:opacity-60 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-950/40"
+                  disabled={deleteWalletMutation.isPending}
+                  onClick={() => {
+                    if (!window.confirm(`Remove wallet ${shortAddress(wallet.address)}?`)) {
+                      return;
+                    }
+                    deleteWalletMutation.mutate(wallet.id);
+                  }}
+                  type="button"
+                >
+                  Remove
+                </button>
               </div>
             ))}
             {!walletsQuery.data?.wallets.length && <p className="text-sm text-slate-500 dark:text-slate-400">No linked wallets yet.</p>}
