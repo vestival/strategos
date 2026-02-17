@@ -220,4 +220,35 @@ describe("computePortfolioSnapshot", () => {
 
     expect(snapshot.transactions[0]?.valueUsd).toBe(0);
   });
+
+  it("includes per-asset wallet breakdown for current holdings", async () => {
+    const snapshot = await computePortfolioSnapshot(["W1", "W2"], {
+      getAccountStateFn: async (wallet) =>
+        wallet === "W1"
+          ? {
+              address: "W1",
+              algoAmount: 2,
+              assets: [],
+              appsLocalState: []
+            }
+          : {
+              address: "W2",
+              algoAmount: 3,
+              assets: [],
+              appsLocalState: []
+            },
+      getTransactionsFn: async () => [],
+      getSpotPricesFn: async () => ({
+        ALGO: 0.1
+      }),
+      getHistoricalPricesFn: async () => ({}),
+      getDefiPositionsFn: async () => []
+    });
+
+    const algo = snapshot.assets.find((asset) => asset.assetKey === "ALGO");
+    expect(algo).toBeDefined();
+    expect(algo?.walletBreakdown).toHaveLength(2);
+    expect(algo?.walletBreakdown[0]).toMatchObject({ wallet: "W2", balance: 3 });
+    expect(algo?.walletBreakdown[1]).toMatchObject({ wallet: "W1", balance: 2 });
+  });
 });

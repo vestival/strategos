@@ -5,6 +5,9 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 ## [Unreleased]
 
 ### Added
+- Overview assets are now expandable: clicking an asset row reveals per-wallet holdings for that specific asset (wallet address, balance, and current USD value) (2026-02-17 08:13 MST)
+- Snapshot payload now includes `walletBreakdown` per asset so wallet-level allocation is computed server-side and persists in cached snapshots (2026-02-17 08:13 MST)
+- Added snapshot regression test to validate per-asset wallet breakdown output (`tests/snapshot.test.ts`) (2026-02-17 08:13 MST)
 - EN/ES language switching with persistent preference (`localStorage`) via global `LanguageProvider` and `LanguageToggle` controls (2026-02-17 06:41 MST)
 - Bilingual UI coverage for landing page, dashboard, auth buttons, and wallet linking flow (2026-02-17 06:41 MST)
 - Basic i18n regression tests for dictionary presence and translated tab labels (`tests/i18n.test.ts`) (2026-02-17 06:41 MST)

@@ -46,6 +46,8 @@ export const messages = {
       },
       overview: {
         hideZero: "Hide 0 balance tokens",
+        heldByWallets: "Held by wallets",
+        noWalletBreakdown: "No wallet-level balance details for this asset.",
         headers: {
           asset: "Asset",
           balance: "Balance",
@@ -203,6 +205,8 @@ export const messages = {
       },
       overview: {
         hideZero: "Ocultar tokens con balance 0",
+        heldByWallets: "Distribucion por wallet",
+        noWalletBreakdown: "No hay detalle de balances por wallet para este activo.",
         headers: {
           asset: "Activo",
           balance: "Balance",
@@ -316,4 +320,3 @@ export const messages = {
     }
   }
 } as const;
-

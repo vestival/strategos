@@ -10,6 +10,11 @@ export type SnapshotAssetRow = {
   assetKey: string;
   assetName: string;
   balance: number;
+  walletBreakdown: Array<{
+    wallet: string;
+    balance: number;
+    valueUsd: number | null;
+  }>;
   priceUsd: number | null;
   valueUsd: number | null;
   costBasisUsd: number;
@@ -95,13 +100,24 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
   const txns = Array.from(txMap.values());
 
   const balancesByAsset = new Map<string, number>();
+  const balancesByWalletByAsset = new Map<string, Map<string, number>>();
   const decimalsByAsset: Record<string, number> = {};
 
   for (const account of accountStates) {
     balancesByAsset.set("ALGO", (balancesByAsset.get("ALGO") ?? 0) + account.algoAmount);
+    if (!balancesByWalletByAsset.has("ALGO")) {
+      balancesByWalletByAsset.set("ALGO", new Map());
+    }
+    const algoWalletMap = balancesByWalletByAsset.get("ALGO")!;
+    algoWalletMap.set(account.address, (algoWalletMap.get(account.address) ?? 0) + account.algoAmount);
     for (const asset of account.assets) {
       const key = String(asset.assetId);
       balancesByAsset.set(key, (balancesByAsset.get(key) ?? 0) + asset.amount);
+      if (!balancesByWalletByAsset.has(key)) {
+        balancesByWalletByAsset.set(key, new Map());
+      }
+      const walletMap = balancesByWalletByAsset.get(key)!;
+      walletMap.set(account.address, (walletMap.get(account.address) ?? 0) + asset.amount);
       decimalsByAsset[key] = asset.decimals;
     }
   }
@@ -148,6 +164,14 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
 
     const price = pricesUsd[assetKey] ?? null;
     const valueUsd = price === null ? null : balance * price;
+    const walletBreakdown = Array.from(balancesByWalletByAsset.get(assetKey)?.entries() ?? [])
+      .filter(([, walletBalance]) => walletBalance > 0)
+      .map(([wallet, walletBalance]) => ({
+        wallet,
+        balance: walletBalance,
+        valueUsd: price === null ? null : walletBalance * price
+      }))
+      .sort((a, b) => b.balance - a.balance);
     const lotSummary = fifo[assetKey];
     const lotQty = finiteOr(lotSummary?.remainingQty ?? 0);
     const lotCost = finiteOr(lotSummary?.remainingCostUsd ?? 0);
@@ -168,6 +192,7 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
       assetKey,
       assetName,
       balance,
+      walletBreakdown,
       priceUsd: price,
       valueUsd,
       costBasisUsd,

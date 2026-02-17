@@ -25,6 +25,11 @@ type SnapshotResponse = {
       assetKey: string;
       assetName?: string;
       balance: number;
+      walletBreakdown: Array<{
+        wallet: string;
+        balance: number;
+        valueUsd: number | null;
+      }>;
       priceUsd: number | null;
       valueUsd: number | null;
       costBasisUsd: number;
@@ -76,6 +81,7 @@ export function DashboardClient() {
   const { m } = useLanguage();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("overview");
   const [hideZeroBalances, setHideZeroBalances] = useState<boolean>(true);
+  const [expandedAssetKey, setExpandedAssetKey] = useState<string | null>(null);
   const [privacyMode, setPrivacyMode] = useState<boolean>(false);
   const [txDirectionFilter, setTxDirectionFilter] = useState<"all" | "in" | "out" | "self">("all");
   const [txTypeFilter, setTxTypeFilter] = useState<"all" | "payment" | "asset-transfer">("all");
@@ -247,17 +253,50 @@ export function DashboardClient() {
               </thead>
               <tbody>
                 {visibleAssets.map((asset) => (
-                  <tr className="border-t border-slate-200 dark:border-slate-800" key={asset.assetKey}>
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{asset.assetName ?? asset.assetKey}</div>
-                      {(asset.assetName ?? asset.assetKey) !== asset.assetKey && <div className="text-xs text-slate-500 dark:text-slate-400">ASA {asset.assetKey}</div>}
-                    </td>
-                    <td className="px-4 py-3">{maskNumber(asset.balance)}</td>
-                    <td className="px-4 py-3">{asset.priceUsd === null ? m.dashboard.overview.noPrice : maskUsd(asset.priceUsd)}</td>
-                    <td className="px-4 py-3">{maskUsd(asset.valueUsd)}</td>
-                    <td className="px-4 py-3">{maskUsd(asset.costBasisUsd)}</td>
-                    <td className="px-4 py-3">{maskUsd(asset.unrealizedPnlUsd)}</td>
-                  </tr>
+                  [
+                    <tr
+                      className="cursor-pointer border-t border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/40"
+                      key={asset.assetKey}
+                      onClick={() => setExpandedAssetKey((prev) => (prev === asset.assetKey ? null : asset.assetKey))}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="font-medium">{asset.assetName ?? asset.assetKey}</div>
+                        {(asset.assetName ?? asset.assetKey) !== asset.assetKey && <div className="text-xs text-slate-500 dark:text-slate-400">ASA {asset.assetKey}</div>}
+                      </td>
+                      <td className="px-4 py-3">{maskNumber(asset.balance)}</td>
+                      <td className="px-4 py-3">{asset.priceUsd === null ? m.dashboard.overview.noPrice : maskUsd(asset.priceUsd)}</td>
+                      <td className="px-4 py-3">{maskUsd(asset.valueUsd)}</td>
+                      <td className="px-4 py-3">{maskUsd(asset.costBasisUsd)}</td>
+                      <td className="px-4 py-3">{maskUsd(asset.unrealizedPnlUsd)}</td>
+                    </tr>
+                    ,
+                    expandedAssetKey === asset.assetKey ? (
+                      <tr className="border-t border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950/40" key={`${asset.assetKey}-breakdown`}>
+                        <td className="px-4 py-3" colSpan={6}>
+                          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            {m.dashboard.overview.heldByWallets}
+                          </div>
+                          {asset.walletBreakdown.length > 0 ? (
+                            <div className="space-y-1">
+                              {asset.walletBreakdown.map((entry) => (
+                                <div className="flex flex-wrap items-center justify-between gap-3 text-sm" key={`${asset.assetKey}-${entry.wallet}`}>
+                                  <div className="text-slate-600 dark:text-slate-300">{shortAddress(entry.wallet)}</div>
+                                  <div className="text-slate-900 dark:text-slate-100">
+                                    {maskNumber(entry.balance)}{" "}
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                                      ({maskUsd(entry.valueUsd)})
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-slate-500 dark:text-slate-400">{m.dashboard.overview.noWalletBreakdown}</div>
+                          )}
+                        </td>
+                      </tr>
+                    ) : null
+                  ]
                 ))}
                 {!visibleAssets.length && (
                   <tr>
@@ -543,4 +582,3 @@ function formatTransactionTime(unixTs: number, unknownLabel: string): string {
   }
   return new Date(unixTs * 1000).toLocaleString();
 }
-
