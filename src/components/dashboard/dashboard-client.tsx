@@ -7,7 +7,7 @@ import { useState } from "react";
 import { UserMenu } from "@/components/auth-buttons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { apiFetch } from "@/lib/api-client";
-import { formatUsd, shortAddress } from "@/lib/utils";
+import { formatUsd, getAlgorandExplorerTxUrl, shortAddress } from "@/lib/utils";
 
 type SnapshotResponse = {
   snapshot: {
@@ -158,7 +158,7 @@ export function DashboardClient() {
         <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold">Algorand Portfolio Dashboard</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Consolidated balances, FIFO cost basis, PnL, and DeFi estimates.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Consolidated balances, FIFO cost basis, unrealized PnL, and DeFi estimates.</p>
           </div>
           <div className="flex items-center gap-2">
             <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800" href="/wallets">
@@ -184,7 +184,7 @@ export function DashboardClient() {
           </div>
         </header>
 
-        <div className="mb-6 grid gap-3 md:grid-cols-4">
+        <div className="mb-6 grid gap-3 md:grid-cols-3">
           <Card
             label="Total Value"
             value={maskUsd(snapshot?.totals.valueUsd)}
@@ -194,11 +194,6 @@ export function DashboardClient() {
             label="Cost Basis"
             value={maskUsd(snapshot?.totals.costBasisUsd)}
             helpText="Remaining acquisition cost of current holdings using FIFO lots (fees included per policy)."
-          />
-          <Card
-            label="Realized PnL"
-            value={maskUsd(snapshot?.totals.realizedPnlUsd)}
-            helpText="Profit/loss from assets already sold or disposed. Formula: proceeds minus disposed FIFO cost basis."
           />
           <Card
             label="Unrealized PnL"
@@ -324,6 +319,7 @@ export function DashboardClient() {
                     <th className="px-4 py-3">Direction</th>
                     <th className="px-4 py-3">Asset</th>
                     <th className="px-4 py-3">Amount</th>
+                    <th className="px-4 py-3">Price</th>
                     <th className="px-4 py-3">Value</th>
                     <th className="px-4 py-3">Fee</th>
                     <th className="px-4 py-3">Wallet</th>
@@ -332,43 +328,68 @@ export function DashboardClient() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((tx) => (
-                    <tr className="border-t border-slate-200 dark:border-slate-800" key={`${tx.txId}-${tx.assetKey}-${tx.amount}`}>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{formatTransactionTime(tx.ts)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{tx.txType}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`rounded px-2 py-1 text-xs ${
-                            tx.direction === "in"
-                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
-                              : tx.direction === "out"
-                                ? "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300"
-                                : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
-                          }`}
-                        >
-                          {tx.direction}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-slate-900 dark:text-slate-100">{tx.assetName}</div>
-                        {tx.assetName !== tx.assetKey && <div className="text-xs text-slate-500 dark:text-slate-400">{tx.assetKey}</div>}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskNumber(tx.amount)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                        {maskUsd(tx.valueUsd)}
-                        {tx.valueSource === "spot" && tx.amount > 0 && (
-                          <span className="ml-1 text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">est.</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(tx.feeUsd)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{shortAddress(tx.wallet)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{tx.counterparty ? shortAddress(tx.counterparty) : "-"}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{shortAddress(tx.txId)}</td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((tx) => {
+                    const explorerUrl = getAlgorandExplorerTxUrl(tx.txId);
+                    return (
+                      <tr
+                        className={`border-t border-slate-200 dark:border-slate-800 ${explorerUrl ? "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50" : ""}`}
+                        key={`${tx.txId}-${tx.assetKey}-${tx.amount}`}
+                        onClick={() => {
+                          if (!explorerUrl) return;
+                          window.open(explorerUrl, "_blank", "noopener,noreferrer");
+                        }}
+                      >
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{formatTransactionTime(tx.ts)}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{tx.txType}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`rounded px-2 py-1 text-xs ${
+                              tx.direction === "in"
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
+                                : tx.direction === "out"
+                                  ? "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300"
+                                  : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                            }`}
+                          >
+                            {tx.direction}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-slate-900 dark:text-slate-100">{tx.assetName}</div>
+                          {tx.assetName !== tx.assetKey && <div className="text-xs text-slate-500 dark:text-slate-400">{tx.assetKey}</div>}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskNumber(tx.amount)}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                          {maskUsd(tx.unitPriceUsd)}
+                          {tx.valueSource === "spot" && tx.amount > 0 && (
+                            <span className="ml-1 text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">est.</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(tx.valueUsd)}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(tx.feeUsd)}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{shortAddress(tx.wallet)}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{tx.counterparty ? shortAddress(tx.counterparty) : "-"}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                          {explorerUrl ? (
+                            <a
+                              className="underline-offset-2 hover:underline"
+                              href={explorerUrl}
+                              onClick={(event) => event.stopPropagation()}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              {shortAddress(tx.txId)}
+                            </a>
+                          ) : (
+                            shortAddress(tx.txId)
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                   {!filteredTransactions.length && (
                     <tr>
-                      <td className="px-4 py-4 text-slate-500 dark:text-slate-400" colSpan={10}>
+                      <td className="px-4 py-4 text-slate-500 dark:text-slate-400" colSpan={11}>
                         No transactions match your filters.
                       </td>
                     </tr>

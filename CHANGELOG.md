@@ -44,6 +44,10 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Snapshot invalidation now also refreshes automatically when a priced-asset transaction has missing `Value`, preventing stale blank value rows from persisting (2026-02-17 05:44 MST)
 - Transaction rows now carry explicit `valueSource` metadata (`historical`/`spot`/`missing`) and display an `est.` label when spot fallback is used (2026-02-17 05:44 MST)
 - Zero-amount transactions now explicitly render `$0.00` value instead of blank fallback behavior (2026-02-17 05:44 MST)
+- Transactions table now includes a dedicated `Price` column (unit price at tx valuation time) to make `Value = Amount * Price` transparent (2026-02-17 05:57 MST)
+- Transaction rows are now clickable to open the explorer tx page; Tx ID cell also links directly when a canonical tx hash exists (2026-02-17 05:57 MST)
+- Removed top-level `Realized PnL` card from dashboard summary to reduce confusion while realized accounting remains under refinement (2026-02-17 05:57 MST)
+- Added unit tests for explorer transaction URL building and synthetic inner-tx guard (`tests/utils.test.ts`) (2026-02-17 05:57 MST)
 
 ## [0.1.0] - 2026-02-16
 

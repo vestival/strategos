@@ -15,3 +15,11 @@ export function shortAddress(address: string): string {
   }
   return `${address.slice(0, 6)}...${address.slice(-6)}`;
 }
+
+export function getAlgorandExplorerTxUrl(txId: string): string | null {
+  // Explorer cannot resolve synthetic inner-tx path identifiers like "ABC:inner:0".
+  if (!/^[A-Z2-7]+$/.test(txId)) {
+    return null;
+  }
+  return `https://explorer.perawallet.app/tx/${txId}`;
+}
