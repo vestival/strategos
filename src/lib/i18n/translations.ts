@@ -4,7 +4,9 @@ export const messages = {
   en: {
     auth: {
       signInWithGoogle: "Sign in with Google",
-      signOut: "Sign out"
+      signOut: "Sign out",
+      account: "Account",
+      manageWallets: "Manage wallets"
     },
     common: {
       language: "Language",
@@ -110,7 +112,10 @@ export const messages = {
       settings: {
         theme: "Theme",
         themeDesc: "Toggle between light and dark mode",
-        fifo: "Cost basis method: FIFO. Average-cost mode is designed for a future extension."
+        fifo: "Cost basis method: FIFO. Average-cost mode is designed for a future extension.",
+        walletMgmt: "Wallet management",
+        walletMgmtDesc: "Link, verify, and remove wallets from your profile.",
+        openWalletMgmt: "Open wallet management"
       },
       footer: {
         lastSnapshot: "Last snapshot",
@@ -163,7 +168,9 @@ export const messages = {
   es: {
     auth: {
       signInWithGoogle: "Iniciar sesion con Google",
-      signOut: "Cerrar sesion"
+      signOut: "Cerrar sesion",
+      account: "Cuenta",
+      manageWallets: "Gestionar wallets"
     },
     common: {
       language: "Idioma",
@@ -269,7 +276,10 @@ export const messages = {
       settings: {
         theme: "Tema",
         themeDesc: "Cambiar entre modo claro y oscuro",
-        fifo: "Metodo de costo base: FIFO. El modo promedio se deja para una extension futura."
+        fifo: "Metodo de costo base: FIFO. El modo promedio se deja para una extension futura.",
+        walletMgmt: "Gestion de wallets",
+        walletMgmtDesc: "Vincula, verifica y elimina wallets de tu perfil.",
+        openWalletMgmt: "Abrir gestion de wallets"
       },
       footer: {
         lastSnapshot: "Ultimo snapshot",

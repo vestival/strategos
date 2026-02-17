@@ -2,12 +2,12 @@
 
 import { useLanguage } from "@/components/language-provider";
 
-export function LanguageToggle() {
+export function LanguageToggle({ compact = false }: { compact?: boolean }) {
   const { locale, setLocale, m } = useLanguage();
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-slate-500 dark:text-slate-400">{m.common.language}</span>
+      {!compact && <span className="text-xs text-slate-500 dark:text-slate-400">{m.common.language}</span>}
       <div className="inline-flex overflow-hidden rounded-md border border-slate-300 dark:border-slate-700">
         <button
           className={`px-2 py-1 text-xs ${locale === "en" ? "bg-brand-600 text-white" : "bg-transparent text-slate-600 dark:text-slate-300"}`}
@@ -27,4 +27,3 @@ export function LanguageToggle() {
     </div>
   );
 }
-

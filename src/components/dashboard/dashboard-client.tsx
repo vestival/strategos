@@ -171,16 +171,15 @@ export function DashboardClient() {
             <h1 className="text-2xl font-semibold">{m.dashboard.title}</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">{m.dashboard.subtitle}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800" href="/wallets">
-              {m.dashboard.manageWallets}
-            </Link>
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <button
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+              aria-label={privacyMode ? m.dashboard.showAmounts : m.dashboard.hideAmounts}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-300 text-lg hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
               onClick={() => setPrivacyMode((prev) => !prev)}
+              title={privacyMode ? m.dashboard.showAmounts : m.dashboard.hideAmounts}
               type="button"
             >
-              {privacyMode ? m.dashboard.showAmounts : m.dashboard.hideAmounts}
+              {privacyMode ? "👁" : "🙈"}
             </button>
             <button
               className="rounded-md bg-brand-500 px-3 py-2 text-sm text-white hover:bg-brand-700 disabled:opacity-70"
@@ -190,7 +189,7 @@ export function DashboardClient() {
             >
               {refreshMutation.isPending ? m.dashboard.refreshing : m.dashboard.refresh}
             </button>
-            <LanguageToggle />
+            <LanguageToggle compact />
             <ThemeToggle />
             <UserMenu />
           </div>
@@ -539,6 +538,15 @@ export function DashboardClient() {
                 <div className="text-slate-500 dark:text-slate-400">{m.dashboard.settings.themeDesc}</div>
               </div>
               <ThemeToggle />
+            </div>
+            <div className="mb-4 rounded-md border border-slate-200 p-3 dark:border-slate-800">
+              <div className="font-medium text-slate-900 dark:text-slate-100">{m.dashboard.settings.walletMgmt}</div>
+              <div className="mt-1 text-slate-500 dark:text-slate-400">{m.dashboard.settings.walletMgmtDesc}</div>
+              <div className="mt-3">
+                <Link className="rounded-md bg-brand-600 px-3 py-2 text-sm text-white hover:bg-brand-700" href="/wallets">
+                  {m.dashboard.settings.openWalletMgmt}
+                </Link>
+              </div>
             </div>
             <div className="border-t border-slate-200 pt-4 dark:border-slate-800">{m.dashboard.settings.fifo}</div>
           </section>

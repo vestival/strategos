@@ -14,5 +14,11 @@ describe("i18n messages", () => {
     expect(messages.en.dashboard.tabs.transactions).toBe("Transactions");
     expect(messages.es.dashboard.tabs.transactions).toBe("Transacciones");
   });
-});
 
+  it("contains account menu and wallet management labels", () => {
+    expect(messages.en.auth.account).toBe("Account");
+    expect(messages.es.auth.account).toBe("Cuenta");
+    expect(messages.en.dashboard.settings.openWalletMgmt).toBeTruthy();
+    expect(messages.es.dashboard.settings.openWalletMgmt).toBeTruthy();
+  });
+});

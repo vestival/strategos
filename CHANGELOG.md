@@ -5,6 +5,9 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 ## [Unreleased]
 
 ### Added
+- UX redesign of dashboard top bar: compact control cluster with eye privacy toggle, streamlined language switch, and cleaner spacing to reduce action overload (2026-02-17 08:40 MST)
+- New account dropdown menu (email, manage wallets, sign out) replacing the prior always-visible user/email/sign-out row in dashboard header (2026-02-17 08:40 MST)
+- Settings tab now includes a dedicated wallet management section with CTA to open `/wallets` (2026-02-17 08:40 MST)
 - Overview assets are now expandable: clicking an asset row reveals per-wallet holdings for that specific asset (wallet address, balance, and current USD value) (2026-02-17 08:13 MST)
 - Snapshot payload now includes `walletBreakdown` per asset so wallet-level allocation is computed server-side and persists in cached snapshots (2026-02-17 08:13 MST)
 - Added snapshot regression test to validate per-asset wallet breakdown output (`tests/snapshot.test.ts`) (2026-02-17 08:13 MST)
