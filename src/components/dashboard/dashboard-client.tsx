@@ -25,7 +25,7 @@ type SnapshotResponse = {
       assetKey: string;
       assetName?: string;
       balance: number;
-      walletBreakdown: Array<{
+      walletBreakdown?: Array<{
         wallet: string;
         balance: number;
         valueUsd: number | null;
@@ -276,9 +276,9 @@ export function DashboardClient() {
                           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                             {m.dashboard.overview.heldByWallets}
                           </div>
-                          {asset.walletBreakdown.length > 0 ? (
+                          {(asset.walletBreakdown ?? []).length > 0 ? (
                             <div className="space-y-1">
-                              {asset.walletBreakdown.map((entry) => (
+                              {(asset.walletBreakdown ?? []).map((entry) => (
                                 <div className="flex flex-wrap items-center justify-between gap-3 text-sm" key={`${asset.assetKey}-${entry.wallet}`}>
                                   <div className="text-slate-600 dark:text-slate-300">{shortAddress(entry.wallet)}</div>
                                   <div className="text-slate-900 dark:text-slate-100">
