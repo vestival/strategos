@@ -4,7 +4,7 @@ import { getAllDefiPositions } from "@/lib/defi";
 import type { DefiPosition } from "@/lib/defi/types";
 import { runFifo } from "@/lib/portfolio/lots";
 import { parseTransactionsToLotEvents } from "@/lib/portfolio/parser";
-import { getSpotPricesUsd } from "@/lib/price/provider";
+import { getHistoricalPriceKey, getHistoricalPricesUsdByDay, getSpotPricesUsd } from "@/lib/price/provider";
 
 export type SnapshotAssetRow = {
   assetKey: string;
@@ -67,6 +67,7 @@ export type SnapshotDeps = {
   getAccountStateFn?: (address: string) => Promise<AccountState>;
   getTransactionsFn?: (address: string) => Promise<IndexerTxn[]>;
   getSpotPricesFn?: (assetIds: Array<number | null>) => Promise<Record<string, number | null>>;
+  getHistoricalPricesFn?: (assetKeys: string[], unixTimestamps: number[]) => Promise<Record<string, number | null>>;
   getDefiPositionsFn?: (wallets: string[]) => Promise<DefiPosition[]>;
 };
 
@@ -78,6 +79,7 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
   const getAccountStateFn = deps.getAccountStateFn ?? getAccountState;
   const getTransactionsFn = deps.getTransactionsFn ?? getTransactionsForAddress;
   const getSpotPricesFn = deps.getSpotPricesFn ?? getSpotPricesUsd;
+  const getHistoricalPricesFn = deps.getHistoricalPricesFn ?? getHistoricalPricesUsdByDay;
   const getDefiPositionsFn = deps.getDefiPositionsFn ?? getAllDefiPositions;
 
   const accountStates = await Promise.all(wallets.map((w) => getAccountStateFn(w)));
@@ -105,9 +107,20 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
 
   const assetIds: Array<number | null> = [null, ...Object.keys(decimalsByAsset).map((k) => Number(k))];
   const pricesUsd = await getSpotPricesFn(assetIds);
+  const assetKeysForHistory = ["ALGO", ...Object.keys(decimalsByAsset)];
+  const txTimestamps = txns.map((txn) => txn.confirmedRoundTime);
+  const historicalPrices = await getHistoricalPricesFn(assetKeysForHistory, txTimestamps);
+
+  const getUnitPriceUsd = (assetKey: string, unixTs: number): number | null => {
+    const fromHistory = historicalPrices[getHistoricalPriceKey(assetKey, unixTs)];
+    if (fromHistory !== undefined) {
+      return fromHistory;
+    }
+    return pricesUsd[assetKey] ?? null;
+  };
 
   const ownWallets = new Set(wallets);
-  const events = parseTransactionsToLotEvents({ txns, ownWallets, pricesUsd, decimalsByAsset });
+  const events = parseTransactionsToLotEvents({ txns, ownWallets, pricesUsd, decimalsByAsset, getUnitPriceUsd });
   const fifo = runFifo(events);
   const assetNameByKey: Record<string, string> = { ALGO: "ALGO" };
 
@@ -138,11 +151,6 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
       }
     }
 
-    if (balance > 0 && costBasisUsd <= 0 && valueUsd !== null) {
-      // Fallback when historical lot basis is unavailable/partial.
-      costBasisUsd = valueUsd;
-    }
-
     costBasisUsd = finiteOr(costBasisUsd);
     const realizedPnlUsd = finiteOr(lotSummary?.realizedPnlUsd ?? 0);
     const unrealizedPnlUsd = valueUsd === null ? null : finiteOr(valueUsd - costBasisUsd);
@@ -166,7 +174,8 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
   for (const txn of txns) {
     const senderOwned = ownWallets.has(txn.sender);
     const feeAlgo = senderOwned ? txn.fee / 1_000_000 : 0;
-    const feeUsd = feeAlgo * (pricesUsd.ALGO ?? 0);
+    const algoUnitPrice = getUnitPriceUsd("ALGO", txn.confirmedRoundTime) ?? 0;
+    const feeUsd = feeAlgo * algoUnitPrice;
 
     if (txn.paymentTransaction) {
       const receiver = txn.paymentTransaction.receiver;
@@ -175,7 +184,7 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
       const direction: SnapshotTransactionRow["direction"] = senderOwned && receiverOwned ? "self" : senderOwned ? "out" : "in";
       const wallet = senderOwned ? txn.sender : receiver;
       const counterparty = direction === "self" ? receiver : senderOwned ? receiver : txn.sender;
-      const unitPriceUsd = pricesUsd.ALGO ?? null;
+      const unitPriceUsd = getUnitPriceUsd("ALGO", txn.confirmedRoundTime);
 
       transactions.push({
         txId: txn.id,
@@ -204,7 +213,7 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
       const direction: SnapshotTransactionRow["direction"] = senderOwned && receiverOwned ? "self" : senderOwned ? "out" : "in";
       const wallet = senderOwned ? txn.sender : receiver;
       const counterparty = direction === "self" ? receiver : senderOwned ? receiver : txn.sender;
-      const unitPriceUsd = pricesUsd[key] ?? null;
+      const unitPriceUsd = getUnitPriceUsd(key, txn.confirmedRoundTime);
 
       if (!assetNameByKey[key]) {
         try {

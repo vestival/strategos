@@ -123,4 +123,38 @@ describe("computePortfolioSnapshot", () => {
     expect(Number.isFinite(snapshot.totals.unrealizedPnlUsd)).toBe(true);
     expect(Number.isFinite(snapshot.assets[0]?.costBasisUsd ?? Number.NaN)).toBe(true);
   });
+
+  it("uses historical tx-date pricing for transaction value and cost basis", async () => {
+    const snapshot = await computePortfolioSnapshot(["W1"], {
+      getAccountStateFn: async () => ({
+        address: "W1",
+        algoAmount: 1,
+        assets: [],
+        appsLocalState: []
+      }),
+      getTransactionsFn: async () => [
+        {
+          id: "tx-historical",
+          sender: "X",
+          fee: 1000,
+          confirmedRoundTime: 1_700_000_000,
+          paymentTransaction: {
+            receiver: "W1",
+            amount: 1_000_000
+          }
+        }
+      ],
+      getSpotPricesFn: async () => ({
+        ALGO: 0.1
+      }),
+      getHistoricalPricesFn: async () => ({
+        ALGO: 0.1,
+        "ALGO:14-11-2023": 0.2
+      }),
+      getDefiPositionsFn: async () => []
+    });
+
+    expect(snapshot.transactions[0]?.valueUsd).toBeCloseTo(0.2);
+    expect(snapshot.assets.find((a) => a.assetKey === "ALGO")?.costBasisUsd).toBeCloseTo(0.2);
+  });
 });

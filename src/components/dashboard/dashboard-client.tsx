@@ -142,7 +142,13 @@ export function DashboardClient() {
       row.wallet.toLowerCase().includes(needle)
     );
   });
-  const maskNumber = (value: number) => (privacyMode ? "******" : value.toLocaleString());
+  const maskNumber = (value: number) =>
+    privacyMode
+      ? "******"
+      : new Intl.NumberFormat("en-US", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 6
+        }).format(value);
   const maskUsd = (value: number | null | undefined) => (privacyMode ? "******" : formatUsd(value));
 
   return (

@@ -30,6 +30,7 @@ type IndexerTxnResponse = {
     sender: string;
     fee: number;
     "confirmed-round-time"?: number;
+    "round-time"?: number;
     group?: string;
     note?: string;
     "payment-transaction"?: {
@@ -46,6 +47,7 @@ type IndexerTxnResponse = {
       sender?: string;
       fee?: number;
       "confirmed-round-time"?: number;
+      "round-time"?: number;
       group?: string;
       note?: string;
       "payment-transaction"?: {
@@ -67,6 +69,7 @@ type RawTxn = {
   sender?: string;
   fee?: number;
   "confirmed-round-time"?: number;
+  "round-time"?: number;
   group?: string;
   note?: string;
   "payment-transaction"?: {
@@ -91,7 +94,7 @@ function mapRawTxn(
     id: txn.id ?? fallbackId,
     sender: txn.sender ?? fallbackSender,
     fee: txn.fee ?? 0,
-    confirmedRoundTime: txn["confirmed-round-time"] ?? fallbackTime,
+    confirmedRoundTime: txn["confirmed-round-time"] ?? txn["round-time"] ?? fallbackTime,
     group: txn.group,
     note: txn.note,
     paymentTransaction: txn["payment-transaction"],
@@ -109,7 +112,7 @@ function flattenRawTxn(
   txn: RawTxn & { id: string; sender: string }
 ): IndexerTxn[] {
   const out: IndexerTxn[] = [];
-  const rootTime = txn["confirmed-round-time"] ?? 0;
+  const rootTime = txn["confirmed-round-time"] ?? txn["round-time"] ?? 0;
   out.push(mapRawTxn(txn, txn.id, txn.sender, rootTime));
 
   const queue: Array<{ item: RawTxn; path: string }> = [];

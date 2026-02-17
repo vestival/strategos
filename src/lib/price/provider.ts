@@ -38,6 +38,36 @@ function parseAsaMap(): Record<number, string> {
 
 const asaMap = parseAsaMap();
 
+function getCoinGeckoIdForAssetKey(assetKey: string): string | null {
+  if (assetKey === "ALGO") {
+    return ALGO_CG_ID;
+  }
+  const asaId = Number(assetKey);
+  return asaMap[asaId] ?? null;
+}
+
+function formatUtcDay(unixTs: number): string {
+  const d = new Date(unixTs * 1000);
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const yyyy = d.getUTCFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+}
+
+function getCoinGeckoApiBase(): string | null {
+  try {
+    const configured = new URL(env.PRICE_API_URL);
+    if (!configured.hostname.includes("coingecko")) {
+      return null;
+    }
+    return `${configured.protocol}//${configured.host}/api/v3`;
+  } catch {
+    return null;
+  }
+}
+
+const historicalCache = new Map<string, number | null>();
+
 export async function getSpotPricesUsd(assetIds: Array<number | null>): Promise<Record<string, number | null>> {
   const unique = Array.from(new Set(assetIds.map((id) => (id === null ? "ALGO" : String(id)))));
 
@@ -80,4 +110,71 @@ export async function getSpotPricesUsd(assetIds: Array<number | null>): Promise<
   }
 
   return out;
+}
+
+export async function getHistoricalPricesUsdByDay(
+  assetKeys: string[],
+  unixTimestamps: number[]
+): Promise<Record<string, number | null>> {
+  const out: Record<string, number | null> = {};
+  const base = getCoinGeckoApiBase();
+  if (!base) {
+    return out;
+  }
+
+  const days = Array.from(new Set(unixTimestamps.filter((ts) => Number.isFinite(ts) && ts > 0).map((ts) => formatUtcDay(ts))));
+  if (days.length === 0) {
+    return out;
+  }
+
+  const tasks: Array<{ assetKey: string; day: string; coinId: string }> = [];
+
+  for (const assetKey of Array.from(new Set(assetKeys))) {
+    const coinId = getCoinGeckoIdForAssetKey(assetKey);
+    if (!coinId) {
+      continue;
+    }
+    for (const day of days) {
+      tasks.push({ assetKey, day, coinId });
+    }
+  }
+
+  await Promise.all(
+    tasks.map(async (task) => {
+      const cacheKey = `${task.coinId}:${task.day}`;
+      let usd: number | null;
+
+      if (historicalCache.has(cacheKey)) {
+        usd = historicalCache.get(cacheKey) ?? null;
+      } else {
+        const url = new URL(`${base}/coins/${task.coinId}/history`);
+        url.searchParams.set("date", task.day);
+        url.searchParams.set("localization", "false");
+
+        try {
+          const response = await fetch(url.toString(), { next: { revalidate: 0 } });
+          if (!response.ok) {
+            usd = null;
+          } else {
+            const data = (await response.json()) as {
+              market_data?: { current_price?: { usd?: number } };
+            };
+            usd = data.market_data?.current_price?.usd ?? null;
+          }
+        } catch {
+          usd = null;
+        }
+
+        historicalCache.set(cacheKey, usd);
+      }
+
+      out[`${task.assetKey}:${task.day}`] = usd;
+    })
+  );
+
+  return out;
+}
+
+export function getHistoricalPriceKey(assetKey: string, unixTs: number): string {
+  return `${assetKey}:${formatUtcDay(unixTs)}`;
 }

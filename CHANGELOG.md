@@ -32,6 +32,11 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Overview now defaults to hiding 0-balance assets to reduce noise from opt-ins and stale holdings (2026-02-17 05:11 MST)
 - Added "Prices as of" timestamp with local timezone in the dashboard footer for pricing transparency (2026-02-17 05:11 MST)
 - Added FIFO regression test for partial-lot disposal and snapshot assertion for `priceAsOf` metadata (2026-02-17 05:11 MST)
+- Fixed Indexer timestamp parsing by honoring `round-time` fallback, eliminating 1969 transaction dates in UI when `confirmed-round-time` is absent (2026-02-17 05:20 MST)
+- Transactions and FIFO cost basis now use historical per-day USD prices (CoinGecko history for mapped assets) instead of current spot-only pricing (2026-02-17 05:20 MST)
+- Removed the forced fallback of `cost basis = current value`; cost basis now comes from dated transaction lots, preventing artificial zero unrealized PnL (2026-02-17 05:20 MST)
+- Improved amount formatting precision (up to 6 decimals) so small transfers no longer display as zero (2026-02-17 05:20 MST)
+- Added regression test for historical tx-date pricing to validate transaction value and cost basis behavior (`tests/snapshot.test.ts`) (2026-02-17 05:20 MST)
 
 ## [0.1.0] - 2026-02-16
 

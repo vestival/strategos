@@ -6,8 +6,9 @@ export function parseTransactionsToLotEvents(params: {
   ownWallets: Set<string>;
   pricesUsd: Record<string, number | null>;
   decimalsByAsset: Record<string, number>;
+  getUnitPriceUsd?: (assetKey: string, unixTs: number) => number | null;
 }): LotEvent[] {
-  const { txns, ownWallets, pricesUsd, decimalsByAsset } = params;
+  const { txns, ownWallets, pricesUsd, decimalsByAsset, getUnitPriceUsd } = params;
   const events: LotEvent[] = [];
 
   for (const txn of txns) {
@@ -15,6 +16,7 @@ export function parseTransactionsToLotEvents(params: {
     const feeUsd = feeAlgo * (pricesUsd.ALGO ?? 0);
 
     if (txn.paymentTransaction) {
+      const unitPriceUsd = getUnitPriceUsd?.("ALGO", txn.confirmedRoundTime) ?? pricesUsd.ALGO ?? null;
       const amountAlgo = txn.paymentTransaction.amount / 1_000_000;
       const receiver = txn.paymentTransaction.receiver;
       const senderOwned = ownWallets.has(txn.sender);
@@ -31,7 +33,7 @@ export function parseTransactionsToLotEvents(params: {
           assetId: null,
           side: "sell",
           amount: amountAlgo,
-          unitPriceUsd: pricesUsd.ALGO ?? null,
+          unitPriceUsd,
           feeUsd
         });
       }
@@ -43,7 +45,7 @@ export function parseTransactionsToLotEvents(params: {
           assetId: null,
           side: "buy",
           amount: amountAlgo,
-          unitPriceUsd: pricesUsd.ALGO ?? null,
+          unitPriceUsd,
           feeUsd: 0
         });
       }
@@ -56,6 +58,7 @@ export function parseTransactionsToLotEvents(params: {
       const senderOwned = ownWallets.has(txn.sender);
       const receiverOwned = ownWallets.has(receiver);
       const key = String(assetId);
+      const unitPriceUsd = getUnitPriceUsd?.(key, txn.confirmedRoundTime) ?? pricesUsd[key] ?? null;
       const decimals = decimalsByAsset[key] ?? 0;
       const qty = amount / 10 ** decimals;
 
@@ -70,7 +73,7 @@ export function parseTransactionsToLotEvents(params: {
           assetId,
           side: "sell",
           amount: qty,
-          unitPriceUsd: pricesUsd[key] ?? null,
+          unitPriceUsd,
           feeUsd
         });
       }
@@ -82,7 +85,7 @@ export function parseTransactionsToLotEvents(params: {
           assetId,
           side: "buy",
           amount: qty,
-          unitPriceUsd: pricesUsd[key] ?? null,
+          unitPriceUsd,
           feeUsd: 0
         });
       }
