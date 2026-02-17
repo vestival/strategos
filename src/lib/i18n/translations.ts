@@ -6,6 +6,7 @@ export const messages = {
       signInWithGoogle: "Sign in with Google",
       signOut: "Sign out",
       account: "Account",
+      settings: "Settings",
       manageWallets: "Manage wallets"
     },
     common: {
@@ -176,6 +177,7 @@ export const messages = {
       signInWithGoogle: "Iniciar sesion con Google",
       signOut: "Cerrar sesion",
       account: "Cuenta",
+      settings: "Configuracion",
       manageWallets: "Gestionar wallets"
     },
     common: {

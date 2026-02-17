@@ -2,8 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { UserMenu } from "@/components/auth-buttons";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -76,11 +77,13 @@ type SnapshotResponse = {
   } | null;
 };
 
-const tabs = ["overview", "transactions", "defi", "wallets", "settings"] as const;
+type DashboardTab = "overview" | "transactions" | "defi" | "settings";
+const tabs = ["overview", "transactions", "defi"] as const;
 
 export function DashboardClient() {
   const { m } = useLanguage();
-  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("overview");
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
   const [hideZeroBalances, setHideZeroBalances] = useState<boolean>(true);
   const [expandedAssetKey, setExpandedAssetKey] = useState<string | null>(null);
   const [privacyMode, setPrivacyMode] = useState<boolean>(false);
@@ -89,6 +92,23 @@ export function DashboardClient() {
   const [txSearch, setTxSearch] = useState("");
   const [defiSearch, setDefiSearch] = useState("");
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "settings") {
+      setActiveTab("settings");
+      return;
+    }
+    if (tab === "transactions") {
+      setActiveTab("transactions");
+      return;
+    }
+    if (tab === "defi") {
+      setActiveTab("defi");
+      return;
+    }
+    setActiveTab("overview");
+  }, [searchParams]);
 
   const snapshotQuery = useQuery({
     queryKey: ["portfolio-snapshot"],
@@ -202,12 +222,6 @@ export function DashboardClient() {
           </div>
         </header>
 
-        <div className="mb-6 grid gap-3 md:grid-cols-3">
-          <Card label={m.dashboard.cards.totalValue} value={maskUsd(snapshot?.totals.valueUsd)} helpText={m.dashboard.cards.totalValueHelp} />
-          <Card label={m.dashboard.cards.costBasis} value={maskUsd(snapshot?.totals.costBasisUsd)} helpText={m.dashboard.cards.costBasisHelp} />
-          <Card label={m.dashboard.cards.unrealizedPnl} value={maskUsd(snapshot?.totals.unrealizedPnlUsd)} helpText={m.dashboard.cards.unrealizedHelp} />
-        </div>
-
         <nav className="mb-4 flex flex-wrap gap-2">
           {tabs.map((tab) => (
             <button
@@ -222,6 +236,12 @@ export function DashboardClient() {
             </button>
           ))}
         </nav>
+
+        <div className="mb-6 grid gap-3 md:grid-cols-3">
+          <Card label={m.dashboard.cards.totalValue} value={maskUsd(snapshot?.totals.valueUsd)} helpText={m.dashboard.cards.totalValueHelp} />
+          <Card label={m.dashboard.cards.costBasis} value={maskUsd(snapshot?.totals.costBasisUsd)} helpText={m.dashboard.cards.costBasisHelp} />
+          <Card label={m.dashboard.cards.unrealizedPnl} value={maskUsd(snapshot?.totals.unrealizedPnlUsd)} helpText={m.dashboard.cards.unrealizedHelp} />
+        </div>
 
         {refreshMutation.isError && (
           <div className="mb-4 rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-700/60 dark:bg-rose-950/40 dark:text-rose-200">
@@ -514,25 +534,6 @@ export function DashboardClient() {
                   )}
                 </tbody>
               </table>
-            </div>
-          </section>
-        )}
-
-        {activeTab === "wallets" && (
-          <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="space-y-2">
-              {snapshot?.wallets.map((w) => (
-                <div className="rounded-md border border-slate-200 p-3 text-sm dark:border-slate-800" key={w.wallet}>
-                  <div className="font-medium">{shortAddress(w.wallet)}</div>
-                  <div className="text-slate-500 dark:text-slate-400">
-                    {m.dashboard.wallets.value}: {maskUsd(w.totalValueUsd)}
-                  </div>
-                  <div className="text-slate-500 dark:text-slate-400">
-                    {m.dashboard.wallets.costBasis}: {maskUsd(w.totalCostBasisUsd)}
-                  </div>
-                </div>
-              ))}
-              {!snapshot?.wallets.length && <p className="text-sm text-slate-500 dark:text-slate-400">{m.dashboard.wallets.noWallets}</p>}
             </div>
           </section>
         )}

@@ -5,6 +5,7 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 ## [Unreleased]
 
 ### Added
+- User menu now includes a direct `Settings` shortcut (`/dashboard?tab=settings`) so preferences and danger-zone actions are accessible from account controls (2026-02-17 09:02 MST)
 - Self-service account deletion in Settings via secure `DELETE /api/account` endpoint plus UI danger-zone action (with confirmation), cascading removal of linked wallets/snapshots/sessions through Prisma relations (2026-02-17 09:06 MST)
 - Unit tests for account deletion service covering success and missing-user behavior (`tests/account-delete.test.ts`) (2026-02-17 09:06 MST)
 - UX redesign of dashboard top bar: compact control cluster with eye privacy toggle, streamlined language switch, and cleaner spacing to reduce action overload (2026-02-17 08:40 MST)
@@ -31,6 +32,7 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- Simplified dashboard navigation by removing redundant `Wallets` and `Settings` tabs and moving the primary tab strip (`Overview/Transactions/DeFi`) to the top section for cleaner IA and less visual clutter (2026-02-17 09:02 MST)
 - Snapshot API now auto-recomputes when legacy asset rows are missing `walletBreakdown`, so expanded asset rows reliably show wallet-level ownership after deployment updates (2026-02-17 08:28 MST)
 - Overview asset expansion now tolerates older cached snapshots that don't include `walletBreakdown`, preventing client-side crashes when clicking an asset row before refresh (2026-02-17 08:22 MST)
 - Wallet deletion now clears cached portfolio snapshots for the user after unlinking, so removed-wallet transactions/metrics are not retained in dashboard cached data (2026-02-17 06:25 MST)

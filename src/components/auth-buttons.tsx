@@ -63,6 +63,13 @@ export function UserMenu() {
           </div>
           <Link
             className="block rounded-md px-2 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+            href="/dashboard?tab=settings"
+            onClick={() => setOpen(false)}
+          >
+            {m.auth.settings}
+          </Link>
+          <Link
+            className="block rounded-md px-2 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             href="/wallets"
             onClick={() => setOpen(false)}
           >

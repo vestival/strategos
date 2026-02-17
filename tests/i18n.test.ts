@@ -18,6 +18,8 @@ describe("i18n messages", () => {
   it("contains account menu and wallet management labels", () => {
     expect(messages.en.auth.account).toBe("Account");
     expect(messages.es.auth.account).toBe("Cuenta");
+    expect(messages.en.auth.settings).toBe("Settings");
+    expect(messages.es.auth.settings).toBe("Configuracion");
     expect(messages.en.dashboard.settings.openWalletMgmt).toBeTruthy();
     expect(messages.es.dashboard.settings.openWalletMgmt).toBeTruthy();
   });
