@@ -730,6 +730,9 @@ function PortfolioHistoryChart({
   unknownLabel: string;
   noDataLabel: string;
 }) {
+  const latestIndex = Math.max(0, points.length - 1);
+  const [activeIndex, setActiveIndex] = useState(latestIndex);
+
   if (points.length < 2) {
     return (
       <div className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
@@ -751,24 +754,61 @@ function PortfolioHistoryChart({
   });
   const path = coords.map((c, i) => `${i === 0 ? "M" : "L"} ${c.x.toFixed(2)} ${c.y.toFixed(2)}`).join(" ");
   const area = `${path} L ${width} ${height} L 0 ${height} Z`;
-  const latest = points[points.length - 1];
+  const active = coords[Math.min(Math.max(activeIndex, 0), latestIndex)] ?? coords[latestIndex];
+
+  const getClosestIndex = (clientX: number, left: number, boxWidth: number) => {
+    if (boxWidth <= 0) return latestIndex;
+    const relativeX = Math.min(Math.max(clientX - left, 0), boxWidth);
+    const ratio = relativeX / boxWidth;
+    return Math.min(latestIndex, Math.max(0, Math.round(ratio * latestIndex)));
+  };
 
   return (
     <div className="rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950">
       <div className="mb-2 text-xs text-slate-500 dark:text-slate-400">
-        {privacyMode ? "******" : formatUsd(latest?.valueUsd)} •{" "}
-        {latest?.ts ? new Date(latest.ts).toLocaleString(undefined, { timeZoneName: "short" }) : unknownLabel}
+        {privacyMode ? "******" : formatUsd(active?.point.valueUsd)} •{" "}
+        {active?.point.ts ? new Date(active.point.ts).toLocaleString(undefined, { timeZoneName: "short" }) : unknownLabel}
       </div>
-      <svg className="h-56 w-full" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" role="img" aria-label="Portfolio history chart">
-        <defs>
-          <linearGradient id="historyArea" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="rgb(16 185 129 / 0.35)" />
-            <stop offset="100%" stopColor="rgb(16 185 129 / 0.03)" />
-          </linearGradient>
-        </defs>
-        <path d={area} fill="url(#historyArea)" />
-        <path d={path} fill="none" stroke="rgb(16 185 129)" strokeWidth="2.25" strokeLinecap="round" />
-      </svg>
+      <div className="relative">
+        <svg
+          className="h-56 w-full"
+          viewBox={`0 0 ${width} ${height}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Portfolio history chart"
+          onMouseLeave={() => setActiveIndex(latestIndex)}
+          onMouseMove={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            setActiveIndex(getClosestIndex(event.clientX, rect.left, rect.width));
+          }}
+          onTouchMove={(event) => {
+            const touch = event.touches.item(0);
+            if (!touch) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            setActiveIndex(getClosestIndex(touch.clientX, rect.left, rect.width));
+          }}
+        >
+          <defs>
+            <linearGradient id="historyArea" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="rgb(16 185 129 / 0.35)" />
+              <stop offset="100%" stopColor="rgb(16 185 129 / 0.03)" />
+            </linearGradient>
+          </defs>
+          <path d={area} fill="url(#historyArea)" />
+          <path d={path} fill="none" stroke="rgb(16 185 129)" strokeWidth="2.25" strokeLinecap="round" />
+          <line x1={active.x} x2={active.x} y1={0} y2={height} stroke="rgb(148 163 184 / 0.45)" strokeDasharray="3 4" />
+          <circle cx={active.x} cy={active.y} r="4.5" fill="rgb(16 185 129)" stroke="rgb(2 6 23)" strokeWidth="2" />
+        </svg>
+        <div
+          className="pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-slate-300 bg-white/95 px-2 py-1 text-[11px] text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-200"
+          style={{ left: `${(active.x / width) * 100}%` }}
+        >
+          <div>{privacyMode ? "******" : formatUsd(active.point.valueUsd)}</div>
+          <div className="text-slate-500 dark:text-slate-400">
+            {new Date(active.point.ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

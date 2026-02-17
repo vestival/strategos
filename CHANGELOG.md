@@ -5,7 +5,8 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 ## [Unreleased]
 
 ### Added
-- Historical portfolio chart on Overview backed by saved snapshots (`/api/portfolio/history`) with 7D/30D/90D/Max range filters and change summary metrics (2026-02-17 10:20 MST)
+- Portfolio history chart is now interactive (hover/touch crosshair + tooltip with exact point value/date) for easier historical inspection (2026-02-17 10:20 MST)
+- Historical portfolio chart on Overview backed by transaction history replay (`/api/portfolio/history`) with 7D/30D/90D/Max range filters and change summary metrics (2026-02-17 10:20 MST)
 - Portfolio history extraction utility with regression tests for sorting, invalid-row filtering, and same-day deduplication (`src/lib/portfolio/history.ts`, `tests/history.test.ts`) (2026-02-17 10:20 MST)
 - User menu now includes a direct `Settings` shortcut (`/dashboard?tab=settings`) so preferences and danger-zone actions are accessible from account controls (2026-02-17 09:02 MST)
 - Self-service account deletion in Settings via secure `DELETE /api/account` endpoint plus UI danger-zone action (with confirmation), cascading removal of linked wallets/snapshots/sessions through Prisma relations (2026-02-17 09:06 MST)
@@ -34,6 +35,7 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- Portfolio history data source now replays historical transactions from the latest snapshot payload (instead of sparse snapshot-only points), producing denser and transaction-grounded historical series (2026-02-17 10:20 MST)
 - Simplified dashboard navigation by removing redundant `Wallets` and `Settings` tabs and moving the primary tab strip (`Overview/Transactions/DeFi`) to the top section for cleaner IA and less visual clutter (2026-02-17 09:02 MST)
 - Snapshot API now auto-recomputes when legacy asset rows are missing `walletBreakdown`, so expanded asset rows reliably show wallet-level ownership after deployment updates (2026-02-17 08:28 MST)
 - Overview asset expansion now tolerates older cached snapshots that don't include `walletBreakdown`, preventing client-side crashes when clicking an asset row before refresh (2026-02-17 08:22 MST)
