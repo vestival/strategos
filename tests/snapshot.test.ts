@@ -157,4 +157,36 @@ describe("computePortfolioSnapshot", () => {
     expect(snapshot.transactions[0]?.valueUsd).toBeCloseTo(0.2);
     expect(snapshot.assets.find((a) => a.assetKey === "ALGO")?.costBasisUsd).toBeCloseTo(0.2);
   });
+
+  it("falls back to spot price when historical price is unavailable for a tx date", async () => {
+    const snapshot = await computePortfolioSnapshot(["W1"], {
+      getAccountStateFn: async () => ({
+        address: "W1",
+        algoAmount: 1,
+        assets: [],
+        appsLocalState: []
+      }),
+      getTransactionsFn: async () => [
+        {
+          id: "tx-spot-fallback",
+          sender: "X",
+          fee: 1000,
+          confirmedRoundTime: 1_700_000_000,
+          paymentTransaction: {
+            receiver: "W1",
+            amount: 1_000_000
+          }
+        }
+      ],
+      getSpotPricesFn: async () => ({
+        ALGO: 0.1
+      }),
+      getHistoricalPricesFn: async () => ({
+        "ALGO:14-11-2023": null
+      }),
+      getDefiPositionsFn: async () => []
+    });
+
+    expect(snapshot.transactions[0]?.valueUsd).toBeCloseTo(0.1);
+  });
 });

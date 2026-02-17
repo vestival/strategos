@@ -113,7 +113,7 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
 
   const getUnitPriceUsd = (assetKey: string, unixTs: number): number | null => {
     const fromHistory = historicalPrices[getHistoricalPriceKey(assetKey, unixTs)];
-    if (fromHistory !== undefined) {
+    if (fromHistory !== undefined && fromHistory !== null) {
       return fromHistory;
     }
     return pricesUsd[assetKey] ?? null;

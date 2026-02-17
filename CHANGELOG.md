@@ -39,6 +39,8 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Added regression test for historical tx-date pricing to validate transaction value and cost basis behavior (`tests/snapshot.test.ts`) (2026-02-17 05:20 MST)
 - Snapshot API now auto-recomputes when cached transactions contain invalid timestamps (`ts <= 0`) so stale 1969-era rows are replaced by fresh indexer data (2026-02-17 05:27 MST)
 - Transactions table time renderer now shows `unknown` for invalid timestamps instead of misleading `12/31/1969` fallback dates (2026-02-17 05:27 MST)
+- Fixed transaction valuation fallback: when historical price lookup returns `null` for a date, snapshot now falls back to current spot price instead of leaving tx `Value` empty (2026-02-17 05:34 MST)
+- Added regression test for historical-price-null fallback to spot valuation (`tests/snapshot.test.ts`) (2026-02-17 05:34 MST)
 
 ## [0.1.0] - 2026-02-16
 
