@@ -20,6 +20,8 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- Wallet deletion now clears cached portfolio snapshots for the user after unlinking, so removed-wallet transactions/metrics are not retained in dashboard cached data (2026-02-17 06:25 MST)
+- Added deletion regression coverage to ensure cache purge runs only on successful owner deletion, and never on 403/404 paths (`tests/wallet-delete.test.ts`) (2026-02-17 06:25 MST)
 - Transactions table now labels token IDs explicitly as `ASA <id>` below the symbol (instead of a bare number), clarifying why IDs appear for ASA assets (2026-02-17 06:16 MST)
 - Transactions `Price` now renders with higher precision (3-6 decimals) for small values so source pricing can be validated more easily (2026-02-17 06:16 MST)
 - Transactions `Fee` now shows native ALGO fee with at least 3 decimals (plus precise USD secondary line), matching on-chain fee readability (2026-02-17 06:16 MST)

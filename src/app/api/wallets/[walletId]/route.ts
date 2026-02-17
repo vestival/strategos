@@ -22,6 +22,9 @@ const deleteWalletForUser = createDeleteWalletService({
   },
   deleteWalletById: async (walletId) => {
     await prisma.linkedWallet.delete({ where: { id: walletId } });
+  },
+  clearCachedPortfolioDataForUser: async (userId) => {
+    await prisma.portfolioSnapshot.deleteMany({ where: { userId } });
   }
 });
 

@@ -7,6 +7,7 @@ type DeleteWalletDeps = {
   findWalletById: (walletId: string) => Promise<WalletRecord | null>;
   deleteChallengesForWallet: (walletId: string) => Promise<void>;
   deleteWalletById: (walletId: string) => Promise<void>;
+  clearCachedPortfolioDataForUser: (userId: string) => Promise<void>;
 };
 
 export type DeleteWalletResult =
@@ -26,6 +27,7 @@ export function createDeleteWalletService(deps: DeleteWalletDeps) {
 
     await deps.deleteChallengesForWallet(wallet.id);
     await deps.deleteWalletById(wallet.id);
+    await deps.clearCachedPortfolioDataForUser(wallet.userId);
 
     return { ok: true };
   };
