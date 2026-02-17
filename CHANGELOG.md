@@ -26,6 +26,7 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- Snapshot API now auto-recomputes when legacy asset rows are missing `walletBreakdown`, so expanded asset rows reliably show wallet-level ownership after deployment updates (2026-02-17 08:28 MST)
 - Overview asset expansion now tolerates older cached snapshots that don't include `walletBreakdown`, preventing client-side crashes when clicking an asset row before refresh (2026-02-17 08:22 MST)
 - Wallet deletion now clears cached portfolio snapshots for the user after unlinking, so removed-wallet transactions/metrics are not retained in dashboard cached data (2026-02-17 06:25 MST)
 - Added deletion regression coverage to ensure cache purge runs only on successful owner deletion, and never on 403/404 paths (`tests/wallet-delete.test.ts`) (2026-02-17 06:25 MST)

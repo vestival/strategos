@@ -51,6 +51,11 @@ export async function GET(request: Request) {
           assetKey: string;
           assetName?: string;
           balance?: number | null;
+          walletBreakdown?: Array<{
+            wallet: string;
+            balance: number;
+            valueUsd: number | null;
+          }> | null;
           priceUsd?: number | null;
           costBasisUsd?: number | null;
           realizedPnlUsd?: number | null;
@@ -83,6 +88,9 @@ export async function GET(request: Request) {
     const ts = tx.ts;
     return !Number.isFinite(ts) || (ts ?? 0) <= 0;
   });
+  const hasMissingWalletBreakdown = (data?.assets ?? []).some(
+    (asset) => (asset.balance ?? 0) > 0 && !Array.isArray(asset.walletBreakdown)
+  );
   const pricedKeys = new Set(
     (data?.assets ?? [])
       .filter((asset) => asset.priceUsd !== null && Number.isFinite(asset.priceUsd))
@@ -104,6 +112,7 @@ export async function GET(request: Request) {
     hasInvalidTotals ||
     hasInvalidAssets ||
     hasInvalidTxTimestamps ||
+    hasMissingWalletBreakdown ||
     hasMissingPricedTxValues;
   if (needsRecompute) {
     const wallets = await prisma.linkedWallet.findMany({
