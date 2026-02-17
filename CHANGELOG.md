@@ -37,6 +37,8 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Removed the forced fallback of `cost basis = current value`; cost basis now comes from dated transaction lots, preventing artificial zero unrealized PnL (2026-02-17 05:20 MST)
 - Improved amount formatting precision (up to 6 decimals) so small transfers no longer display as zero (2026-02-17 05:20 MST)
 - Added regression test for historical tx-date pricing to validate transaction value and cost basis behavior (`tests/snapshot.test.ts`) (2026-02-17 05:20 MST)
+- Snapshot API now auto-recomputes when cached transactions contain invalid timestamps (`ts <= 0`) so stale 1969-era rows are replaced by fresh indexer data (2026-02-17 05:27 MST)
+- Transactions table time renderer now shows `unknown` for invalid timestamps instead of misleading `12/31/1969` fallback dates (2026-02-17 05:27 MST)
 
 ## [0.1.0] - 2026-02-16
 

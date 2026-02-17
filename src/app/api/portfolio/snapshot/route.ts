@@ -55,7 +55,9 @@ export async function GET(request: Request) {
           realizedPnlUsd?: number | null;
           unrealizedPnlUsd?: number | null;
         }>;
-        transactions?: unknown[];
+        transactions?: Array<{
+          ts?: number | null;
+        }>;
       }
     | null
     | undefined;
@@ -73,8 +75,17 @@ export async function GET(request: Request) {
         (asset.assetKey === "ALGO" || asset.costBasisUsd !== null || asset.realizedPnlUsd !== null) &&
         (asset.costBasisUsd === null || asset.realizedPnlUsd === null)
     );
+  const hasInvalidTxTimestamps = (data?.transactions ?? []).some((tx) => {
+    const ts = tx.ts;
+    return !Number.isFinite(ts) || (ts ?? 0) <= 0;
+  });
   const needsRecompute =
-    !data || !Array.isArray(data.transactions) || data.transactions.length === 0 || hasInvalidTotals || hasInvalidAssets;
+    !data ||
+    !Array.isArray(data.transactions) ||
+    data.transactions.length === 0 ||
+    hasInvalidTotals ||
+    hasInvalidAssets ||
+    hasInvalidTxTimestamps;
   if (needsRecompute) {
     const wallets = await prisma.linkedWallet.findMany({
       where: {

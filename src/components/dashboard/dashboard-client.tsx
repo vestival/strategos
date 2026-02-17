@@ -333,7 +333,7 @@ export function DashboardClient() {
                 <tbody>
                   {filteredTransactions.map((tx) => (
                     <tr className="border-t border-slate-200 dark:border-slate-800" key={`${tx.txId}-${tx.assetKey}-${tx.amount}`}>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{new Date(tx.ts * 1000).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{formatTransactionTime(tx.ts)}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{tx.txType}</td>
                       <td className="px-4 py-3">
                         <span
@@ -501,4 +501,11 @@ function Card({ label, value, helpText }: { label: string; value: string; helpTe
       <div className="mt-1 text-xl font-semibold">{value}</div>
     </div>
   );
+}
+
+function formatTransactionTime(unixTs: number): string {
+  if (!Number.isFinite(unixTs) || unixTs <= 0) {
+    return "unknown";
+  }
+  return new Date(unixTs * 1000).toLocaleString();
 }
