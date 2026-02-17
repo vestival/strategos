@@ -1,21 +1,24 @@
 "use client";
 
 import { signIn, signOut, useSession } from "next-auth/react";
+import { useLanguage } from "@/components/language-provider";
 
 export function SignInButton() {
+  const { m } = useLanguage();
   return (
     <button
       className="rounded-lg bg-brand-500 px-4 py-2 text-white hover:bg-brand-700"
       onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
       type="button"
     >
-      Sign in with Google
+      {m.auth.signInWithGoogle}
     </button>
   );
 }
 
 export function UserMenu() {
   const { data } = useSession();
+  const { m } = useLanguage();
 
   if (!data?.user) return null;
 
@@ -27,7 +30,7 @@ export function UserMenu() {
         onClick={() => signOut({ callbackUrl: "/" })}
         type="button"
       >
-        Sign out
+        {m.auth.signOut}
       </button>
     </div>
   );

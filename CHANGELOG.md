@@ -5,6 +5,9 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 ## [Unreleased]
 
 ### Added
+- EN/ES language switching with persistent preference (`localStorage`) via global `LanguageProvider` and `LanguageToggle` controls (2026-02-17 06:41 MST)
+- Bilingual UI coverage for landing page, dashboard, auth buttons, and wallet linking flow (2026-02-17 06:41 MST)
+- Basic i18n regression tests for dictionary presence and translated tab labels (`tests/i18n.test.ts`) (2026-02-17 06:41 MST)
 - Light/dark mode toggle using `next-themes` with Tailwind `darkMode: "class"` strategy (2026-02-17)
   - Theme toggle button (sun/moon icons) in dashboard header and Settings tab
   - All pages converted to dual-mode: landing, dashboard, wallets, auth buttons

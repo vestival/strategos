@@ -5,6 +5,8 @@ import algosdk from "algosdk";
 import Link from "next/link";
 import { useState } from "react";
 
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/components/language-provider";
 import { apiFetch } from "@/lib/api-client";
 import { shortAddress } from "@/lib/utils";
 
@@ -51,6 +53,7 @@ function fromBase64(base64: string): Uint8Array {
 }
 
 export default function WalletsPage() {
+  const { m } = useLanguage();
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
   const [availableAccounts, setAvailableAccounts] = useState<string[]>([]);
   const [peraWallet, setPeraWallet] = useState<PeraWallet | null>(null);
@@ -71,10 +74,10 @@ export default function WalletsPage() {
       apiFetch<{ ok: boolean }>("/api/wallets/verify", { method: "POST", body: JSON.stringify(payload) }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      setStatusText("Wallet verified and linked.");
+      setStatusText(m.walletsPage.walletVerifiedAndLinked);
     },
     onError: (error) => {
-      setStatusText(error instanceof Error ? error.message : "Verification failed");
+      setStatusText(error instanceof Error ? error.message : m.walletsPage.verificationFailed);
     }
   });
 
@@ -95,10 +98,10 @@ export default function WalletsPage() {
       }
       await queryClient.invalidateQueries({ queryKey: ["wallets"] });
       await queryClient.invalidateQueries({ queryKey: ["portfolio-snapshot"] });
-      setStatusText("Wallet removed.");
+      setStatusText(m.walletsPage.walletRemoved);
     },
     onError: (error) => {
-      setStatusText(error instanceof Error ? error.message : "Failed to remove wallet");
+      setStatusText(error instanceof Error ? error.message : m.walletsPage.failedRemoveWallet);
     }
   });
 
@@ -106,12 +109,12 @@ export default function WalletsPage() {
     mutationFn: () => apiFetch<LinkResponse>("/api/wallets/link", { method: "POST", body: JSON.stringify({ address: connectedAddress }) }),
     onSuccess: async (data) => {
       if (!connectedAddress || !peraWallet) {
-        setStatusText("Connect Pera Wallet first.");
+        setStatusText(m.walletsPage.connectPeraFirst);
         return;
       }
 
       try {
-        setStatusText("Awaiting wallet signature...");
+        setStatusText(m.walletsPage.awaitingSignature);
         const unsignedTxnBytes = fromBase64(data.unsignedTxnB64);
         const unsignedTxn = algosdk.decodeUnsignedTransaction(unsignedTxnBytes);
         const signed = await peraWallet.signTransaction(
@@ -121,21 +124,21 @@ export default function WalletsPage() {
         const signedTxn = signed[0];
 
         if (!signedTxn) {
-          setStatusText("No signed transaction returned by wallet.");
+          setStatusText(m.walletsPage.noSignedTxn);
           return;
         }
 
-        setStatusText("Submitting signed transaction...");
+        setStatusText(m.walletsPage.submittingSignedTxn);
         await verifyMutation.mutateAsync({
           challengeId: data.challengeId,
           signedTxnB64: toBase64(new Uint8Array(signedTxn))
         });
       } catch (error) {
-        setStatusText(error instanceof Error ? error.message : "Wallet signing failed");
+        setStatusText(error instanceof Error ? error.message : m.walletsPage.walletSigningFailed);
       }
     },
     onError: (error) => {
-      setStatusText(error instanceof Error ? error.message : "Challenge creation failed");
+      setStatusText(error instanceof Error ? error.message : m.walletsPage.challengeCreationFailed);
     }
   });
 
@@ -165,23 +168,23 @@ export default function WalletsPage() {
 
       if (!accounts.length) {
         setPeraWallet(wallet);
-        setStatusText("No wallet account returned. If Pera is already connected, use Disconnect and try again.");
+        setStatusText(m.walletsPage.noWalletReturned);
         return;
       }
 
       const linked = new Set((walletsQuery.data?.wallets ?? []).map((w) => w.address));
       const addr = accounts.find((account) => !linked.has(account)) ?? accounts[0];
       if (!algosdk.isValidAddress(addr)) {
-        setStatusText("Wallet returned invalid address");
+        setStatusText(m.walletsPage.invalidAddress);
         return;
       }
 
       setPeraWallet(wallet);
       setAvailableAccounts(accounts);
       setConnectedAddress(addr);
-      setStatusText("Wallet connected.");
+      setStatusText(m.walletsPage.walletConnected);
     } catch (error) {
-      setStatusText(error instanceof Error ? error.message : "Wallet connection failed");
+      setStatusText(error instanceof Error ? error.message : m.walletsPage.walletConnectionFailed);
     }
   }
 
@@ -199,18 +202,21 @@ export default function WalletsPage() {
       setPeraWallet(null);
       setAvailableAccounts([]);
       setConnectedAddress(null);
-      setStatusText("Wallet disconnected.");
+      setStatusText(m.walletsPage.walletDisconnected);
     }
   }
 
   return (
     <main className="min-h-screen bg-slate-50 p-4 text-slate-900 dark:bg-slate-950 dark:text-slate-100 md:p-8">
       <div className="mx-auto max-w-4xl">
-        <header className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Wallet Linking</h1>
-          <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800" href="/dashboard">
-            Back to dashboard
-          </Link>
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold">{m.walletsPage.title}</h1>
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <Link className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800" href="/dashboard">
+              {m.walletsPage.backToDashboard}
+            </Link>
+          </div>
         </header>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
@@ -220,7 +226,7 @@ export default function WalletsPage() {
               onClick={connectPeraWallet}
               type="button"
             >
-              {connectedAddress ? "Switch wallet" : "Connect wallet"}
+              {connectedAddress ? m.walletsPage.switchWallet : m.walletsPage.connectWallet}
             </button>
             <button
               className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100 disabled:opacity-60 dark:border-slate-700 dark:hover:bg-slate-800"
@@ -228,17 +234,17 @@ export default function WalletsPage() {
               onClick={disconnectPeraWallet}
               type="button"
             >
-              Disconnect
+              {m.walletsPage.disconnect}
             </button>
           </div>
 
           <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="text-slate-500 dark:text-slate-400">Connected wallet</div>
-            <div className="font-medium">{connectedAddress ? shortAddress(connectedAddress) : "Not connected"}</div>
+            <div className="text-slate-500 dark:text-slate-400">{m.walletsPage.connectedWallet}</div>
+            <div className="font-medium">{connectedAddress ? shortAddress(connectedAddress) : m.walletsPage.notConnected}</div>
             {availableAccounts.length > 1 && (
               <div className="mt-2">
                 <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400" htmlFor="wallet-account-select">
-                  Select account
+                  {m.walletsPage.selectAccount}
                 </label>
                 <select
                   id="wallet-account-select"
@@ -256,7 +262,7 @@ export default function WalletsPage() {
             )}
             {connectedAddress && (
               <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                {connectedAlreadyVerified ? "This wallet is already verified." : "This wallet is not linked yet."}
+                {connectedAlreadyVerified ? m.walletsPage.alreadyVerified : m.walletsPage.notLinkedYet}
               </div>
             )}
           </div>
@@ -268,48 +274,49 @@ export default function WalletsPage() {
             type="button"
           >
             {connectedAlreadyVerified
-              ? "Already verified"
+              ? m.walletsPage.alreadyVerifiedCta
               : linkMutation.isPending || verifyMutation.isPending
-                ? "Verifying..."
-                : "Verify wallet ownership"}
+                ? m.walletsPage.verifying
+                : m.walletsPage.verifyOwnership}
           </button>
 
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            This creates a 0-ALGO verification transaction with a nonce note, requests wallet signature, and submits it
-            automatically.
+            {m.walletsPage.explainOne}
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            To link multiple wallets, repeat: connect another wallet, then verify.
+            {m.walletsPage.explainTwo}
           </p>
 
           {statusText && <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{statusText}</p>}
         </div>
 
         <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="mb-3 text-lg font-medium">Linked wallets</h2>
+          <h2 className="mb-3 text-lg font-medium">{m.walletsPage.linkedWallets}</h2>
           <div className="space-y-2">
             {walletsQuery.data?.wallets.map((wallet) => (
               <div className="flex items-start justify-between gap-3 rounded-md border border-slate-200 p-3 text-sm dark:border-slate-800" key={wallet.id}>
                 <div>
                   <div className="font-medium">{shortAddress(wallet.address)}</div>
-                  <div className="text-slate-500 dark:text-slate-400">Status: {wallet.verifiedAt ? "Verified" : "Pending verification"}</div>
+                  <div className="text-slate-500 dark:text-slate-400">
+                    {m.walletsPage.status}: {wallet.verifiedAt ? m.walletsPage.verified : m.walletsPage.pendingVerification}
+                  </div>
                 </div>
                 <button
                   className="rounded-md border border-rose-300 px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-50 disabled:opacity-60 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-950/40"
                   disabled={deleteWalletMutation.isPending}
                   onClick={() => {
-                    if (!window.confirm(`Remove wallet ${shortAddress(wallet.address)}?`)) {
+                    if (!window.confirm(`${m.walletsPage.confirmRemovePrefix} ${shortAddress(wallet.address)}?`)) {
                       return;
                     }
                     deleteWalletMutation.mutate(wallet.id);
                   }}
                   type="button"
                 >
-                  Remove
+                  {m.walletsPage.remove}
                 </button>
               </div>
             ))}
-            {!walletsQuery.data?.wallets.length && <p className="text-sm text-slate-500 dark:text-slate-400">No linked wallets yet.</p>}
+            {!walletsQuery.data?.wallets.length && <p className="text-sm text-slate-500 dark:text-slate-400">{m.walletsPage.noLinkedWallets}</p>}
           </div>
         </section>
       </div>
