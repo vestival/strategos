@@ -38,6 +38,8 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- FIFO cost basis no longer drifts with refresh-only spot price moves: lot accounting now uses historical acquisition-time prices only (no spot fallback in parser/FIFO path), while transaction display still falls back to spot when needed (2026-02-17 19:31 MST)
+- Added regression test to ensure changing spot price does not mutate FIFO remaining cost basis when historical tx-date price is unavailable (`tests/snapshot.test.ts`) (2026-02-17 19:31 MST)
 - Portfolio history data source now replays historical transactions from the latest snapshot payload (instead of sparse snapshot-only points), producing denser and transaction-grounded historical series (2026-02-17 10:20 MST)
 - Simplified dashboard navigation by removing redundant `Wallets` and `Settings` tabs and moving the primary tab strip (`Overview/Transactions/DeFi`) to the top section for cleaner IA and less visual clutter (2026-02-17 09:02 MST)
 - Snapshot API now auto-recomputes when legacy asset rows are missing `walletBreakdown`, so expanded asset rows reliably show wallet-level ownership after deployment updates (2026-02-17 08:28 MST)

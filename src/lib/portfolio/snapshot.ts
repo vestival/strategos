@@ -142,10 +142,19 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
     }
     return { unitPriceUsd: null, source: "missing" };
   };
-  const getUnitPriceUsd = (assetKey: string, unixTs: number): number | null => getPriceQuote(assetKey, unixTs).unitPriceUsd;
+  const getHistoricalUnitPriceUsd = (assetKey: string, unixTs: number): number | null => {
+    const fromHistory = historicalPrices[getHistoricalPriceKey(assetKey, unixTs)];
+    return fromHistory !== undefined && fromHistory !== null && Number.isFinite(fromHistory) ? fromHistory : null;
+  };
 
   const ownWallets = new Set(wallets);
-  const events = parseTransactionsToLotEvents({ txns, ownWallets, pricesUsd, decimalsByAsset, getUnitPriceUsd });
+  const events = parseTransactionsToLotEvents({
+    txns,
+    ownWallets,
+    pricesUsd,
+    decimalsByAsset,
+    getUnitPriceUsd: getHistoricalUnitPriceUsd
+  });
   const fifo = runFifo(events);
   const assetNameByKey: Record<string, string> = { ALGO: "ALGO" };
 

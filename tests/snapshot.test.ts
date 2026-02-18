@@ -85,6 +85,9 @@ describe("computePortfolioSnapshot", () => {
       getSpotPricesFn: async () => ({
         ALGO: 2
       }),
+      getHistoricalPricesFn: async () => ({
+        "ALGO:01-01-1970": 2
+      }),
       getDefiPositionsFn: async () => []
     });
 
@@ -189,6 +192,51 @@ describe("computePortfolioSnapshot", () => {
 
     expect(snapshot.transactions[0]?.valueUsd).toBeCloseTo(0.1);
     expect(snapshot.transactions[0]?.valueSource).toBe("spot");
+  });
+
+  it("keeps FIFO cost basis stable when only spot price changes and historical is missing", async () => {
+    const getAccountStateFn = async () => ({
+      address: "W1",
+      algoAmount: 1,
+      assets: [],
+      appsLocalState: []
+    });
+    const getTransactionsFn = async () => [
+      {
+        id: "tx-cost-stable",
+        sender: "X",
+        fee: 1000,
+        confirmedRoundTime: 1_700_000_000,
+        paymentTransaction: {
+          receiver: "W1",
+          amount: 1_000_000
+        }
+      }
+    ];
+    const getHistoricalPricesFn = async () => ({
+      "ALGO:14-11-2023": null
+    });
+
+    const snapshotA = await computePortfolioSnapshot(["W1"], {
+      getAccountStateFn,
+      getTransactionsFn,
+      getSpotPricesFn: async () => ({ ALGO: 0.1 }),
+      getHistoricalPricesFn,
+      getDefiPositionsFn: async () => []
+    });
+
+    const snapshotB = await computePortfolioSnapshot(["W1"], {
+      getAccountStateFn,
+      getTransactionsFn,
+      getSpotPricesFn: async () => ({ ALGO: 0.5 }),
+      getHistoricalPricesFn,
+      getDefiPositionsFn: async () => []
+    });
+
+    expect(snapshotA.transactions[0]?.valueUsd).toBeCloseTo(0.1);
+    expect(snapshotB.transactions[0]?.valueUsd).toBeCloseTo(0.5);
+    expect(snapshotA.assets.find((asset) => asset.assetKey === "ALGO")?.costBasisUsd).toBeCloseTo(0);
+    expect(snapshotB.assets.find((asset) => asset.assetKey === "ALGO")?.costBasisUsd).toBeCloseTo(0);
   });
 
   it("renders zero-value for zero-amount transfers even when price is missing", async () => {

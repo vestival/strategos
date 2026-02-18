@@ -13,10 +13,11 @@ export function parseTransactionsToLotEvents(params: {
 
   for (const txn of txns) {
     const feeAlgo = txn.fee / 1_000_000;
-    const feeUsd = feeAlgo * (pricesUsd.ALGO ?? 0);
+    const feeUnitPriceUsd = getUnitPriceUsd?.("ALGO", txn.confirmedRoundTime) ?? pricesUsd.ALGO ?? 0;
+    const feeUsd = feeAlgo * feeUnitPriceUsd;
 
     if (txn.paymentTransaction) {
-      const unitPriceUsd = getUnitPriceUsd?.("ALGO", txn.confirmedRoundTime) ?? pricesUsd.ALGO ?? null;
+      const unitPriceUsd = getUnitPriceUsd ? getUnitPriceUsd("ALGO", txn.confirmedRoundTime) : (pricesUsd.ALGO ?? null);
       const amountAlgo = txn.paymentTransaction.amount / 1_000_000;
       const receiver = txn.paymentTransaction.receiver;
       const senderOwned = ownWallets.has(txn.sender);
@@ -58,7 +59,7 @@ export function parseTransactionsToLotEvents(params: {
       const senderOwned = ownWallets.has(txn.sender);
       const receiverOwned = ownWallets.has(receiver);
       const key = String(assetId);
-      const unitPriceUsd = getUnitPriceUsd?.(key, txn.confirmedRoundTime) ?? pricesUsd[key] ?? null;
+      const unitPriceUsd = getUnitPriceUsd ? getUnitPriceUsd(key, txn.confirmedRoundTime) : (pricesUsd[key] ?? null);
       const decimals = decimalsByAsset[key] ?? 0;
       const qty = amount / 10 ** decimals;
 
