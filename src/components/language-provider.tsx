@@ -32,6 +32,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, locale);
+    document.documentElement.lang = locale;
   }, [locale]);
 
   const value = useMemo<LanguageContextValue>(
@@ -53,4 +54,3 @@ export function useLanguage() {
   }
   return ctx;
 }
-

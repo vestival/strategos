@@ -8,3 +8,5 @@ process.env.ALGORAND_VERIFICATION_RECEIVER = process.env.ALGORAND_VERIFICATION_R
 process.env.PRICE_API_URL = process.env.PRICE_API_URL ?? "https://api.coingecko.com/api/v3/simple/price";
 process.env.DEFI_LLAMA_PRICE_API_URL = process.env.DEFI_LLAMA_PRICE_API_URL ?? "https://coins.llama.fi/prices/current";
 process.env.ASA_PRICE_MAP_JSON = process.env.ASA_PRICE_MAP_JSON ?? "{}";
+process.env.NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://strategos.vestival.es";
+process.env.NEXT_PUBLIC_SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@strategos.vestival.es";

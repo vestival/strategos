@@ -1,10 +1,14 @@
 # Changelog
 
-All notable changes to the Algorand Portfolio Tracker are documented in this file.
+All notable changes to Strategos are documented in this file.
 
 ## [Unreleased]
 
 ### Added
+- Strategos brand system documentation with identity standards, tone, typography, and color tokens in `docs/BRANDING.md` (2026-02-18 06:27 MST)
+- Legal pages with EN/ES localized content: `/privacy` and `/terms`, including dynamic last-updated date and support email placeholder sourced from environment configuration (2026-02-18 06:27 MST)
+- Global footer with Strategos identity, legal links, and current-year copyright on all app pages (2026-02-18 06:27 MST)
+- JSON-based locale dictionaries at `locales/en.json` and `locales/es.json` for structured i18n coverage (2026-02-18 06:27 MST)
 - New Wallet Analytics tab with wallet multi-select dropdown, metric selector (`Total value (USD)` / `Token balance`), chart mode selector (`Aggregate` / `Per wallet`), and asset selector for balance visualization (2026-02-17 11:02 MST)
 - Interactive multi-line wallet chart with hover/touch crosshair, per-series tooltip values, and range filters (7D/30D/90D/Max) (2026-02-17 11:02 MST)
 - Wallet analytics series utilities and tests for per-wallet replay, ALGO fee impact on balance mode, and aligned aggregate series generation (`src/lib/portfolio/wallet-analytics.ts`, `tests/wallet-analytics.test.ts`) (2026-02-17 11:02 MST)
@@ -32,6 +36,9 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Unit test coverage for wallet deletion ownership/404 rules via a dedicated deletion service (`tests/wallet-delete.test.ts`) (2026-02-17 04:46 MST)
 
 ### Changed
+- Rebranded application identity from prior naming to **Strategos** across metadata, package naming, and documentation titles (2026-02-18 06:27 MST)
+- Updated metadata canonical/Open Graph base URL handling using `NEXT_PUBLIC_BASE_URL` (default `https://strategos.vestival.es`) for custom-domain readiness on Vercel (2026-02-18 06:27 MST)
+- Updated typography and visual system to institutional dark-first defaults: Cinzel for brand headings and Inter for UI text (2026-02-18 06:27 MST)
 - README fully refreshed to match current shipped behavior: wallet analytics tab, transaction-based historical charting, account deletion, i18n/theme/privacy controls, and FIFO historical-pricing rules (2026-02-17 19:37 MST)
 - Complete rewrite of README.md with architecture diagram, annotated project structure, environment variable tables, expanded feature descriptions, and security documentation
 - Added this CHANGELOG.md

@@ -1,0 +1,332 @@
+{
+  "auth": {
+    "signInWithGoogle": "Sign in with Google",
+    "signOut": "Sign out",
+    "account": "Account",
+    "settings": "Settings",
+    "manageWallets": "Manage wallets",
+    "userFallback": "User",
+    "openMenu": "Open account menu"
+  },
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "spanish": "Spanish",
+    "appName": "Strategos",
+    "tagline": "Architect of Capital.",
+    "home": "Home",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "copyright": "© {year} Strategos",
+    "systemError": "Please review your configuration and try again."
+  },
+  "landing": {
+    "badge": "Strategos",
+    "title": "Strategos",
+    "subtitle": "Architect of Capital. Portfolio intelligence for disciplined investors.",
+    "openDashboard": "Open platform"
+  },
+  "dashboard": {
+    "title": "Strategos",
+    "subtitle": "Architect of Capital. Institutional portfolio intelligence with disciplined analytics.",
+    "manageWallets": "Manage wallets",
+    "hideAmounts": "Hide amounts",
+    "showAmounts": "Show amounts",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "tabs": {
+      "overview": "Overview",
+      "transactions": "Transactions",
+      "defi": "DeFi Positions",
+      "walletAnalytics": "Wallet Analytics",
+      "wallets": "Wallets",
+      "settings": "Settings"
+    },
+    "cards": {
+      "totalValue": "Total Value",
+      "costBasis": "Cost Basis",
+      "unrealizedPnl": "Unrealized PnL",
+      "totalValueHelp": "Current USD value of priced assets across all linked wallets. Assets without prices are excluded.",
+      "costBasisHelp": "Remaining acquisition cost of current holdings using FIFO lots (fees included per policy).",
+      "unrealizedHelp": "Paper profit/loss on current holdings. Formula: current value minus remaining FIFO cost basis."
+    },
+    "errors": {
+      "refreshFailed": "Refresh failed."
+    },
+    "overview": {
+      "hideZero": "Hide 0 balance tokens",
+      "heldByWallets": "Held by wallets",
+      "noWalletBreakdown": "No wallet-level balance details for this asset.",
+      "headers": {
+        "asset": "Asset",
+        "balance": "Balance",
+        "price": "Price",
+        "value": "Value",
+        "costBasis": "Cost Basis",
+        "unrealized": "Unrealized"
+      },
+      "noPrice": "no price",
+      "noAssets": "No assets to show. Disable filter or refresh snapshot."
+    },
+    "transactions": {
+      "allDirections": "All directions",
+      "inbound": "Inbound",
+      "outbound": "Outbound",
+      "internal": "Internal",
+      "allTypes": "All types",
+      "payment": "Payment",
+      "assetTransfer": "Asset transfer",
+      "searchPlaceholder": "Search tx id, asset, wallet, counterparty",
+      "rows": "rows",
+      "headers": {
+        "time": "Time",
+        "type": "Type",
+        "direction": "Direction",
+        "asset": "Asset",
+        "amount": "Amount",
+        "price": "Price",
+        "value": "Value",
+        "fee": "Fee",
+        "wallet": "Wallet",
+        "counterparty": "Counterparty",
+        "txId": "Tx ID"
+      },
+      "noRows": "No transactions match your filters.",
+      "estimated": "est."
+    },
+    "chart": {
+      "title": "Portfolio history",
+      "points": "data points",
+      "startValue": "Start value",
+      "endValue": "End value",
+      "change": "Change",
+      "noData": "Not enough historical snapshots yet. Refresh over time to build this chart.",
+      "ranges": {
+        "7d": "7D",
+        "30d": "30D",
+        "90d": "90D",
+        "max": "Max"
+      }
+    },
+    "walletAnalytics": {
+      "metric": "Metric",
+      "valueMode": "Total value (USD)",
+      "balanceMode": "Token balance",
+      "view": "Chart mode",
+      "aggregate": "Aggregate",
+      "perWallet": "Per wallet",
+      "wallets": "Wallet filter",
+      "asset": "Asset"
+    },
+    "defi": {
+      "yieldEstimate": "Yield estimate",
+      "estimated": "estimated",
+      "positions": "positions",
+      "searchPlaceholder": "Search protocol, type, wallet",
+      "headers": {
+        "vault": "Vault",
+        "atDeposit": "At Deposit",
+        "now": "Now",
+        "yield": "Yield",
+        "pnl": "PnL",
+        "apy": "APY",
+        "dailyYield": "Daily Yield"
+      },
+      "noRows": "No DeFi positions match your search.",
+      "vaultSuffix": "Vault"
+    },
+    "wallets": {
+      "noWallets": "No wallets linked.",
+      "value": "Value",
+      "costBasis": "Cost basis"
+    },
+    "settings": {
+      "theme": "Display",
+      "themeDesc": "Strategos runs in dark mode by design.",
+      "fifo": "Cost basis method: FIFO. Average-cost mode is designed for a future extension.",
+      "walletMgmt": "Wallet management",
+      "walletMgmtDesc": "Link, verify, and remove wallets from your profile.",
+      "openWalletMgmt": "Open wallet management",
+      "dangerZone": "Danger zone",
+      "deleteAccount": "Delete account",
+      "deletingAccount": "Deleting account...",
+      "deleteAccountDesc": "Permanently deletes your user, linked wallets, snapshots, sessions, and audit records.",
+      "deleteAccountConfirm": "Delete your account permanently? This action cannot be undone.",
+      "deleteAccountFailed": "Account deletion failed.",
+      "darkOnly": "Dark mode"
+    },
+    "footer": {
+      "lastSnapshot": "Last snapshot",
+      "pricesAsOf": "Prices as of",
+      "none": "none",
+      "unknown": "unknown"
+    }
+  },
+  "walletsPage": {
+    "title": "Wallet Management",
+    "backToDashboard": "Back to dashboard",
+    "connectWallet": "Connect wallet",
+    "switchWallet": "Switch wallet",
+    "disconnect": "Disconnect",
+    "connectedWallet": "Connected wallet",
+    "notConnected": "Not connected",
+    "selectAccount": "Select account",
+    "alreadyVerified": "This wallet is already verified.",
+    "notLinkedYet": "This wallet is not linked yet.",
+    "verifyOwnership": "Verify wallet ownership",
+    "verifying": "Verifying...",
+    "alreadyVerifiedCta": "Already verified",
+    "explainOne": "This creates a 0-ALGO verification transaction with a nonce note, requests wallet signature, and submits it automatically.",
+    "explainTwo": "To link multiple wallets, repeat: connect another wallet, then verify.",
+    "linkedWallets": "Linked wallets",
+    "status": "Status",
+    "verified": "Verified",
+    "pendingVerification": "Pending verification",
+    "remove": "Remove",
+    "noLinkedWallets": "No linked wallets yet.",
+    "confirmRemovePrefix": "Remove wallet",
+    "connectPeraFirst": "Connect Pera Wallet first.",
+    "awaitingSignature": "Awaiting wallet signature...",
+    "noSignedTxn": "No signed transaction returned by wallet.",
+    "submittingSignedTxn": "Submitting signed transaction...",
+    "walletSigningFailed": "Wallet signing failed",
+    "challengeCreationFailed": "Challenge creation failed",
+    "noWalletReturned": "No wallet account returned. If Pera is already connected, use Disconnect and try again.",
+    "invalidAddress": "Wallet returned invalid address",
+    "walletConnected": "Wallet connected.",
+    "walletConnectionFailed": "Wallet connection failed",
+    "walletDisconnected": "Wallet disconnected.",
+    "walletVerifiedAndLinked": "Wallet verified and linked.",
+    "verificationFailed": "Verification failed",
+    "walletRemoved": "Wallet removed.",
+    "failedRemoveWallet": "Failed to remove wallet"
+  },
+  "legal": {
+    "privacy": {
+      "title": "Privacy Policy",
+      "heading": "Strategos Privacy Policy",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Strategos is a portfolio intelligence platform that allows users to track and analyze digital assets and investments.",
+      "sections": [
+        {
+          "title": "Information We Collect",
+          "body": [
+            "We may collect:",
+            "• Email address if authentication is used",
+            "• Public blockchain wallet addresses voluntarily connected",
+            "• Usage data such as browser type and interaction events",
+            "• Analytics data for performance improvements",
+            "Strategos does not custody funds.",
+            "Strategos does not access private keys.",
+            "Strategos does not execute transactions on behalf of users."
+          ]
+        },
+        {
+          "title": "How We Use Information",
+          "body": [
+            "We use collected information to:",
+            "• Provide portfolio visualization features",
+            "• Improve reliability and performance",
+            "• Enhance security",
+            "• Respond to user inquiries",
+            "We do not sell personal data."
+          ]
+        },
+        {
+          "title": "Third-Party Services",
+          "body": [
+            "We may use:",
+            "• Authentication providers",
+            "• Hosting providers (Vercel)",
+            "• Analytics services",
+            "Each provider operates under its own privacy policy."
+          ]
+        },
+        {
+          "title": "Data Security",
+          "body": [
+            "We implement reasonable technical safeguards."
+          ]
+        },
+        {
+          "title": "Data Retention",
+          "body": [
+            "We retain data only as long as necessary to provide the service."
+          ]
+        },
+        {
+          "title": "User Rights",
+          "body": [
+            "Users may have rights to access, correct, or delete their data depending on jurisdiction."
+          ]
+        },
+        {
+          "title": "Contact",
+          "body": [
+            "For privacy inquiries, contact:",
+            "{email}"
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "heading": "Strategos Terms of Service",
+      "lastUpdated": "Last updated: {date}",
+      "sections": [
+        {
+          "title": "Acceptance",
+          "body": [
+            "By using Strategos, you agree to these Terms."
+          ]
+        },
+        {
+          "title": "No Financial Advice",
+          "body": [
+            "Strategos provides analytics tools.",
+            "Nothing constitutes financial, legal, or tax advice.",
+            "Users are solely responsible for their decisions."
+          ]
+        },
+        {
+          "title": "No Custody",
+          "body": [
+            "Strategos does not hold assets, private keys, or execute transactions."
+          ]
+        },
+        {
+          "title": "User Responsibilities",
+          "body": [
+            "Users agree to use the service lawfully and not attempt to disrupt it."
+          ]
+        },
+        {
+          "title": "Limitation of Liability",
+          "body": [
+            "Strategos is provided “as is” without warranties.",
+            "We are not responsible for investment losses."
+          ]
+        },
+        {
+          "title": "Modifications",
+          "body": [
+            "We may update these terms periodically."
+          ]
+        },
+        {
+          "title": "Governing Law",
+          "body": [
+            "These Terms are governed by the laws of [INSERT GOVERNING LAW JURISDICTION], without regard to conflict-of-laws principles."
+          ]
+        },
+        {
+          "title": "Contact",
+          "body": [
+            "For legal inquiries, contact:",
+            "{email}"
+          ]
+        }
+      ]
+    }
+  }
+}

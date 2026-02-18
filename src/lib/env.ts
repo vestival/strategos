@@ -38,6 +38,8 @@ const envSchema = z.object({
   PUBLIC_RATE_LIMIT_WINDOW_MS: positiveIntWithDefault(60_000),
   PUBLIC_RATE_LIMIT_MAX: positiveIntWithDefault(60),
   INDEXER_TX_LIMIT: positiveIntWithDefault(500),
+  NEXT_PUBLIC_BASE_URL: z.string().url().default("https://strategos.vestival.es"),
+  NEXT_PUBLIC_SUPPORT_EMAIL: z.string().email().default("support@strategos.vestival.es"),
   NEXTAUTH_DEBUG: z.preprocess((value) => {
     if (typeof value !== "string") return false;
     const normalized = value.trim().toLowerCase();

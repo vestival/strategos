@@ -1,0 +1,332 @@
+{
+  "auth": {
+    "signInWithGoogle": "Iniciar sesion con Google",
+    "signOut": "Cerrar sesion",
+    "account": "Cuenta",
+    "settings": "Configuracion",
+    "manageWallets": "Gestionar wallets",
+    "userFallback": "Usuario",
+    "openMenu": "Abrir menú de cuenta"
+  },
+  "common": {
+    "language": "Idioma",
+    "english": "Ingles",
+    "spanish": "Espanol",
+    "appName": "Strategos",
+    "tagline": "Architect of Capital.",
+    "home": "Inicio",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "copyright": "© {year} Strategos",
+    "systemError": "Revise la configuración e inténtelo nuevamente."
+  },
+  "landing": {
+    "badge": "Strategos",
+    "title": "Strategos",
+    "subtitle": "Architect of Capital. Inteligencia de portafolio para inversores disciplinados.",
+    "openDashboard": "Abrir plataforma"
+  },
+  "dashboard": {
+    "title": "Strategos",
+    "subtitle": "Architect of Capital. Inteligencia institucional de portafolio con analítica disciplinada.",
+    "manageWallets": "Gestionar wallets",
+    "hideAmounts": "Ocultar montos",
+    "showAmounts": "Mostrar montos",
+    "refresh": "Actualizar",
+    "refreshing": "Actualizando...",
+    "tabs": {
+      "overview": "Resumen",
+      "transactions": "Transacciones",
+      "defi": "Posiciones DeFi",
+      "walletAnalytics": "Analitica wallets",
+      "wallets": "Wallets",
+      "settings": "Configuracion"
+    },
+    "cards": {
+      "totalValue": "Valor total",
+      "costBasis": "Costo base",
+      "unrealizedPnl": "PnL no realizado",
+      "totalValueHelp": "Valor USD actual de activos con precio en todas las wallets vinculadas. Los activos sin precio se excluyen.",
+      "costBasisHelp": "Costo de adquisicion restante de holdings actuales usando lotes FIFO (incluye fees segun politica).",
+      "unrealizedHelp": "Ganancia/perdida no realizada sobre holdings actuales. Formula: valor actual menos costo FIFO restante."
+    },
+    "errors": {
+      "refreshFailed": "La actualización falló."
+    },
+    "overview": {
+      "hideZero": "Ocultar tokens con balance 0",
+      "heldByWallets": "Distribucion por wallet",
+      "noWalletBreakdown": "No hay detalle de balances por wallet para este activo.",
+      "headers": {
+        "asset": "Activo",
+        "balance": "Balance",
+        "price": "Precio",
+        "value": "Valor",
+        "costBasis": "Costo base",
+        "unrealized": "No realizado"
+      },
+      "noPrice": "sin precio",
+      "noAssets": "No hay activos para mostrar. Desactiva el filtro o actualiza el snapshot."
+    },
+    "transactions": {
+      "allDirections": "Todas direcciones",
+      "inbound": "Entrada",
+      "outbound": "Salida",
+      "internal": "Interna",
+      "allTypes": "Todos tipos",
+      "payment": "Pago",
+      "assetTransfer": "Transferencia ASA",
+      "searchPlaceholder": "Buscar tx id, activo, wallet, contraparte",
+      "rows": "filas",
+      "headers": {
+        "time": "Hora",
+        "type": "Tipo",
+        "direction": "Direccion",
+        "asset": "Activo",
+        "amount": "Cantidad",
+        "price": "Precio",
+        "value": "Valor",
+        "fee": "Fee",
+        "wallet": "Wallet",
+        "counterparty": "Contraparte",
+        "txId": "Tx ID"
+      },
+      "noRows": "No hay transacciones para esos filtros.",
+      "estimated": "est."
+    },
+    "chart": {
+      "title": "Historial del portafolio",
+      "points": "puntos",
+      "startValue": "Valor inicial",
+      "endValue": "Valor final",
+      "change": "Cambio",
+      "noData": "Aun no hay suficientes snapshots historicos. Actualiza con el tiempo para construir este grafico.",
+      "ranges": {
+        "7d": "7D",
+        "30d": "30D",
+        "90d": "90D",
+        "max": "Max"
+      }
+    },
+    "walletAnalytics": {
+      "metric": "Metrica",
+      "valueMode": "Valor total (USD)",
+      "balanceMode": "Balance token",
+      "view": "Modo grafico",
+      "aggregate": "Agregado",
+      "perWallet": "Por wallet",
+      "wallets": "Filtro wallets",
+      "asset": "Activo"
+    },
+    "defi": {
+      "yieldEstimate": "Rendimiento estimado",
+      "estimated": "estimado",
+      "positions": "posiciones",
+      "searchPlaceholder": "Buscar protocolo, tipo, wallet",
+      "headers": {
+        "vault": "Vault",
+        "atDeposit": "En deposito",
+        "now": "Ahora",
+        "yield": "Rendimiento",
+        "pnl": "PnL",
+        "apy": "APY",
+        "dailyYield": "Rend. diario"
+      },
+      "noRows": "No hay posiciones DeFi para esa busqueda.",
+      "vaultSuffix": "Vault"
+    },
+    "wallets": {
+      "noWallets": "No hay wallets vinculadas.",
+      "value": "Valor",
+      "costBasis": "Costo base"
+    },
+    "settings": {
+      "theme": "Visualización",
+      "themeDesc": "Strategos opera en modo oscuro por diseño.",
+      "fifo": "Metodo de costo base: FIFO. El modo promedio se deja para una extension futura.",
+      "walletMgmt": "Gestion de wallets",
+      "walletMgmtDesc": "Vincula, verifica y elimina wallets de tu perfil.",
+      "openWalletMgmt": "Abrir gestion de wallets",
+      "dangerZone": "Zona de peligro",
+      "deleteAccount": "Eliminar cuenta",
+      "deletingAccount": "Eliminando cuenta...",
+      "deleteAccountDesc": "Elimina permanentemente tu usuario, wallets vinculadas, snapshots, sesiones y logs de auditoria.",
+      "deleteAccountConfirm": "Eliminar tu cuenta de forma permanente? Esta accion no se puede deshacer.",
+      "deleteAccountFailed": "No se pudo eliminar la cuenta.",
+      "darkOnly": "Modo oscuro"
+    },
+    "footer": {
+      "lastSnapshot": "Ultimo snapshot",
+      "pricesAsOf": "Precios al",
+      "none": "ninguno",
+      "unknown": "desconocido"
+    }
+  },
+  "walletsPage": {
+    "title": "Gestión de Wallets",
+    "backToDashboard": "Volver al panel",
+    "connectWallet": "Conectar wallet",
+    "switchWallet": "Cambiar wallet",
+    "disconnect": "Desconectar",
+    "connectedWallet": "Wallet conectada",
+    "notConnected": "No conectada",
+    "selectAccount": "Seleccionar cuenta",
+    "alreadyVerified": "Esta wallet ya esta verificada.",
+    "notLinkedYet": "Esta wallet aun no esta vinculada.",
+    "verifyOwnership": "Verificar propiedad de wallet",
+    "verifying": "Verificando...",
+    "alreadyVerifiedCta": "Ya verificada",
+    "explainOne": "Esto crea una transaccion de verificacion 0-ALGO con una nota nonce, solicita firma en la wallet y la envia automaticamente.",
+    "explainTwo": "Para vincular multiples wallets, repite: conecta otra wallet y luego verifica.",
+    "linkedWallets": "Wallets vinculadas",
+    "status": "Estado",
+    "verified": "Verificada",
+    "pendingVerification": "Verificacion pendiente",
+    "remove": "Eliminar",
+    "noLinkedWallets": "Aun no hay wallets vinculadas.",
+    "confirmRemovePrefix": "Eliminar wallet",
+    "connectPeraFirst": "Primero conecta Pera Wallet.",
+    "awaitingSignature": "Esperando firma de la wallet...",
+    "noSignedTxn": "La wallet no devolvio una transaccion firmada.",
+    "submittingSignedTxn": "Enviando transaccion firmada...",
+    "walletSigningFailed": "Fallo al firmar en wallet",
+    "challengeCreationFailed": "Fallo al crear challenge",
+    "noWalletReturned": "No se devolvio ninguna cuenta. Si Pera ya esta conectado, usa Desconectar e intenta de nuevo.",
+    "invalidAddress": "La wallet devolvio una direccion invalida",
+    "walletConnected": "Wallet conectada.",
+    "walletConnectionFailed": "Fallo de conexion con wallet",
+    "walletDisconnected": "Wallet desconectada.",
+    "walletVerifiedAndLinked": "Wallet verificada y vinculada.",
+    "verificationFailed": "Verificacion fallida",
+    "walletRemoved": "Wallet eliminada.",
+    "failedRemoveWallet": "No se pudo eliminar wallet"
+  },
+  "legal": {
+    "privacy": {
+      "title": "Política de Privacidad",
+      "heading": "Política de Privacidad de Strategos",
+      "lastUpdated": "Última actualización: {date}",
+      "intro": "Strategos es una plataforma de inteligencia de portafolio que permite a los usuarios seguir y analizar activos digitales e inversiones.",
+      "sections": [
+        {
+          "title": "Información que recopilamos",
+          "body": [
+            "Podemos recopilar:",
+            "• Dirección de correo electrónico si se utiliza autenticación",
+            "• Direcciones públicas de wallets blockchain conectadas voluntariamente",
+            "• Datos de uso, como tipo de navegador y eventos de interacción",
+            "• Datos analíticos para mejoras de rendimiento",
+            "Strategos no custodia fondos.",
+            "Strategos no accede a claves privadas.",
+            "Strategos no ejecuta transacciones en nombre de los usuarios."
+          ]
+        },
+        {
+          "title": "Cómo usamos la información",
+          "body": [
+            "Utilizamos la información recopilada para:",
+            "• Proporcionar funcionalidades de visualización de portafolio",
+            "• Mejorar la fiabilidad y el rendimiento",
+            "• Reforzar la seguridad",
+            "• Responder consultas de usuarios",
+            "No vendemos datos personales."
+          ]
+        },
+        {
+          "title": "Servicios de terceros",
+          "body": [
+            "Podemos utilizar:",
+            "• Proveedores de autenticación",
+            "• Proveedores de hosting (Vercel)",
+            "• Servicios de analítica",
+            "Cada proveedor opera bajo su propia política de privacidad."
+          ]
+        },
+        {
+          "title": "Seguridad de los datos",
+          "body": [
+            "Implementamos salvaguardas técnicas razonables."
+          ]
+        },
+        {
+          "title": "Conservación de datos",
+          "body": [
+            "Conservamos los datos solo durante el tiempo necesario para prestar el servicio."
+          ]
+        },
+        {
+          "title": "Derechos del usuario",
+          "body": [
+            "Los usuarios pueden tener derechos de acceso, rectificación o eliminación de datos según su jurisdicción."
+          ]
+        },
+        {
+          "title": "Contacto",
+          "body": [
+            "Para consultas de privacidad, contacte a:",
+            "{email}"
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Términos de Servicio",
+      "heading": "Términos de Servicio de Strategos",
+      "lastUpdated": "Última actualización: {date}",
+      "sections": [
+        {
+          "title": "Aceptación",
+          "body": [
+            "Al utilizar Strategos, usted acepta estos Términos."
+          ]
+        },
+        {
+          "title": "No constituye asesoramiento financiero",
+          "body": [
+            "Strategos proporciona herramientas analíticas.",
+            "Nada de lo aquí contenido constituye asesoramiento financiero, legal o fiscal.",
+            "Los usuarios son exclusivamente responsables de sus decisiones."
+          ]
+        },
+        {
+          "title": "Sin custodia",
+          "body": [
+            "Strategos no mantiene activos, claves privadas ni ejecuta transacciones."
+          ]
+        },
+        {
+          "title": "Responsabilidades del usuario",
+          "body": [
+            "Los usuarios se comprometen a utilizar el servicio de forma lícita y a no intentar interrumpirlo."
+          ]
+        },
+        {
+          "title": "Limitación de responsabilidad",
+          "body": [
+            "Strategos se proporciona “tal cual”, sin garantías.",
+            "No somos responsables por pérdidas de inversión."
+          ]
+        },
+        {
+          "title": "Modificaciones",
+          "body": [
+            "Podemos actualizar estos términos periódicamente."
+          ]
+        },
+        {
+          "title": "Ley aplicable",
+          "body": [
+            "Estos Términos se rigen por las leyes de [INSERT GOVERNING LAW JURISDICTION], sin consideración de principios de conflicto de leyes."
+          ]
+        },
+        {
+          "title": "Contacto",
+          "body": [
+            "Para consultas legales, contacte a:",
+            "{email}"
+          ]
+        }
+      ]
+    }
+  }
+}

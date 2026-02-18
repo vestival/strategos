@@ -27,4 +27,11 @@ describe("i18n messages", () => {
     expect(messages.en.dashboard.settings.openWalletMgmt).toBeTruthy();
     expect(messages.es.dashboard.settings.openWalletMgmt).toBeTruthy();
   });
+
+  it("contains strategos branding and legal labels", () => {
+    expect(messages.en.common.appName).toBe("Strategos");
+    expect(messages.es.common.appName).toBe("Strategos");
+    expect(messages.en.legal.privacy.title).toBeTruthy();
+    expect(messages.es.legal.terms.title).toBeTruthy();
+  });
 });

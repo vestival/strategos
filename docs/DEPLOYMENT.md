@@ -1,4 +1,4 @@
-# Deployment Guide (Vercel + Neon/Supabase)
+# Strategos Deployment Guide (Vercel + Neon/Supabase)
 
 ## 1) Prerequisites
 - Vercel project created and linked (`vercel` done)
@@ -14,7 +14,7 @@ Add these in Vercel: Project -> Settings -> Environment Variables
   - Example: `postgresql://USER:PASSWORD@HOST:5432/DB?sslmode=require`
 - `NEXTAUTH_URL`
   - Your stable production URL.
-  - Example: `https://algorand-tracker.vercel.app`
+  - Example: `https://strategos.vestival.es`
 - `NEXTAUTH_SECRET`
   - 32+ random chars.
   - Generate: `openssl rand -base64 32`
@@ -34,6 +34,8 @@ Add these in Vercel: Project -> Settings -> Environment Variables
   - Empty for public algod, token if provider requires it.
 - `PRICE_API_URL`
   - Example: `https://api.coingecko.com/api/v3/simple/price`
+- `DEFI_LLAMA_PRICE_API_URL`
+  - Example: `https://coins.llama.fi/prices/current`
 - `ASA_PRICE_MAP_JSON`
   - Example: `{"31566704":"usd-coin","312769":"tether"}`
   - Note: app includes built-in defaults for common ASAs; this var is for overrides/extensions.
@@ -49,15 +51,23 @@ Add these in Vercel: Project -> Settings -> Environment Variables
   - Example: `60`
 - `INDEXER_TX_LIMIT`
   - Example: `500`
+- `NEXT_PUBLIC_BASE_URL`
+  - Example: `https://strategos.vestival.es`
+- `NEXT_PUBLIC_SUPPORT_EMAIL`
+  - Example: `support@strategos.vestival.es`
 
 ## 3) Google OAuth setup
 In Google Cloud Console -> OAuth client:
 - Authorized JavaScript origins:
-  - `https://algorand-tracker.vercel.app`
+  - `https://strategos.vestival.es`
 - Authorized redirect URIs:
-  - `https://algorand-tracker.vercel.app/api/auth/callback/google`
+  - `https://strategos.vestival.es/api/auth/callback/google`
 
 If you use a custom domain, replace the above with your custom domain.
+
+In Vercel:
+- Project -> Settings -> Domains -> add `strategos.vestival.es`
+- Configure DNS records at your domain provider as instructed by Vercel.
 
 ## 4) Deploy commands
 After env vars are set:

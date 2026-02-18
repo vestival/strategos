@@ -1,6 +1,8 @@
-# Algorand Portfolio Tracker
+# Strategos
 
-Production-ready MVP for Algorand portfolio tracking with Google login, multi-wallet linking, FIFO cost basis, transaction analytics, and DeFi estimates.
+**Strategos | Architect of Capital**
+
+Portfolio intelligence platform for disciplined investors with Google login, multi-wallet linking, FIFO cost basis, transaction analytics, and DeFi estimates.
 
 ## What it does
 
@@ -15,7 +17,7 @@ Production-ready MVP for Algorand portfolio tracking with Google login, multi-wa
   - Metric toggle: `Total value (USD)` or `Token balance`
   - Range toggle: `7D / 30D / 90D / Max`
 - DeFi positions (Tinyman/Folks/Reti adapter layer, best-effort detection)
-- EN/ES language switch, dark/light mode, privacy hide-amounts mode
+- EN/ES language switch via structured JSON locales, dark-first UI, privacy hide-amounts mode
 - User self-service account deletion from Settings
 
 ## Current accounting behavior
@@ -97,6 +99,9 @@ src/
     env.ts
     rate-limit.ts
 tests/
+locales/
+  en.json
+  es.json
 ```
 
 ## Setup
@@ -144,6 +149,8 @@ npm run dev
 - `PUBLIC_RATE_LIMIT_MAX`
 - `INDEXER_TX_LIMIT`
 - `NEXTAUTH_DEBUG`
+- `NEXT_PUBLIC_BASE_URL`
+- `NEXT_PUBLIC_SUPPORT_EMAIL`
 
 ## Security notes
 
@@ -165,19 +172,24 @@ npm run build
 1. Set all required env vars in Vercel project.
 2. Ensure Google OAuth redirect URI:
    - `https://<your-domain>/api/auth/callback/google`
-3. Deploy:
+3. Add custom domain in Vercel:
+   - Project -> Settings -> Domains -> add `strategos.vestival.es`
+4. Set canonical base URL:
+   - `NEXT_PUBLIC_BASE_URL=https://strategos.vestival.es`
+5. Deploy:
 
 ```bash
 vercel --prod
 ```
 
-4. Initialize database schema (first deploy):
+6. Initialize database schema (first deploy):
 
 ```bash
 npx prisma db push
 ```
 
 Detailed runbook: `docs/DEPLOYMENT.md`.
+Brand system reference: `docs/BRANDING.md`.
 
 ## Known limitations
 

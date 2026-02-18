@@ -9,7 +9,6 @@ import { useEffect, useMemo, useState } from "react";
 import { UserMenu } from "@/components/auth-buttons";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { apiFetch } from "@/lib/api-client";
 import {
   alignSeriesByTimestamp,
@@ -336,17 +335,17 @@ export function DashboardClient() {
       : ((analyticsEndValue - analyticsStartValue) / analyticsStartValue) * 100;
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <main className="min-h-screen bg-[#0F172A] text-[#F8FAFC]">
       <div className="mx-auto max-w-6xl p-4 md:p-8">
         <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">{m.dashboard.title}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{m.dashboard.subtitle}</p>
+            <h1 className="font-brand text-3xl font-semibold tracking-wide">{m.dashboard.title}</h1>
+            <p className="text-sm text-[#94A3B8]">{m.dashboard.subtitle}</p>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <button
               aria-label={privacyMode ? m.dashboard.showAmounts : m.dashboard.hideAmounts}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-300 text-lg hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#334155] text-lg hover:bg-[#1E293B]"
               onClick={() => setPrivacyMode((prev) => !prev)}
               title={privacyMode ? m.dashboard.showAmounts : m.dashboard.hideAmounts}
               type="button"
@@ -362,7 +361,6 @@ export function DashboardClient() {
               {refreshMutation.isPending ? m.dashboard.refreshing : m.dashboard.refresh}
             </button>
             <LanguageToggle compact />
-            <ThemeToggle />
             <UserMenu />
           </div>
         </header>
@@ -371,7 +369,7 @@ export function DashboardClient() {
           {tabs.map((tab) => (
             <button
               className={`rounded-md px-3 py-1.5 text-sm ${
-                activeTab === tab ? "bg-brand-700 text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                activeTab === tab ? "bg-brand-700 text-white" : "bg-[#1E293B] text-[#CBD5E1]"
               }`}
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -389,8 +387,8 @@ export function DashboardClient() {
         </div>
 
         {refreshMutation.isError && (
-          <div className="mb-4 rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-700/60 dark:bg-rose-950/40 dark:text-rose-200">
-            {m.dashboard.errors.refreshFailed} {(refreshMutation.error as Error)?.message ?? "Check API/env configuration and try again."}
+          <div className="mb-4 rounded-md border border-rose-700/60 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">
+            {m.dashboard.errors.refreshFailed} {(refreshMutation.error as Error)?.message ?? m.common.systemError}
           </div>
         )}
 
@@ -867,7 +865,9 @@ export function DashboardClient() {
                 <div className="font-medium text-slate-900 dark:text-slate-100">{m.dashboard.settings.theme}</div>
                 <div className="text-slate-500 dark:text-slate-400">{m.dashboard.settings.themeDesc}</div>
               </div>
-              <ThemeToggle />
+              <span className="rounded-md border border-[#334155] px-3 py-2 text-xs text-[#CBD5E1]">
+                {m.dashboard.settings.darkOnly}
+              </span>
             </div>
             <div className="mb-4 rounded-md border border-slate-200 p-3 dark:border-slate-800">
               <div className="font-medium text-slate-900 dark:text-slate-100">{m.dashboard.settings.walletMgmt}</div>
