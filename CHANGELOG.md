@@ -39,6 +39,9 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- Portfolio history no longer collapses to one point per day; it now preserves point resolution per timestamp so trend changes reflect actual event timing (`src/lib/portfolio/history.ts`) (2026-02-18 20:17 MST)
+- Prevented latest anchor overwrite when a transaction shares the same timestamp as snapshot `computedAt`, avoiding false chart jumps to near-zero values (`src/lib/portfolio/history.ts`) (2026-02-18 20:17 MST)
+- Added regression coverage for same-timestamp anchor protection in portfolio history (`tests/history.test.ts`) (2026-02-18 20:17 MST)
 - Portfolio history chart now anchors replay to the latest snapshot asset balances/prices and replays backwards, preventing exaggerated historical jumps caused by incomplete older transaction windows (`src/lib/portfolio/history.ts`, `src/app/api/portfolio/history/route.ts`) (2026-02-18 20:09 MST)
 - Added regression coverage for latest-anchor historical replay stability (`tests/history.test.ts`) (2026-02-18 20:09 MST)
 - Added multi-provider spot pricing fallback chain: configured `PRICE_API_URL` -> default CoinGecko -> DefiLlama, reducing `no price` outages when one provider is unavailable (`src/lib/price/provider.ts`) (2026-02-18 20:03 MST)

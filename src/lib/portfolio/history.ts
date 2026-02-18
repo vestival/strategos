@@ -84,7 +84,8 @@ export function buildPortfolioHistoryFromTransactions({
       valueUsd: finite(latestValueUsd) ? latestValueUsd : computeValue()
     });
 
-    const descending = [...normalized].sort((a, b) => b.ts - a.ts);
+    const latestTsSeconds = Math.floor(parsedLatestTs / 1000);
+    const descending = normalized.filter((tx) => tx.ts < latestTsSeconds).sort((a, b) => b.ts - a.ts);
     for (const tx of descending) {
       if (finite(tx.unitPriceUsd) && tx.unitPriceUsd >= 0) {
         lastPrice.set(tx.assetKey, tx.unitPriceUsd);
@@ -109,11 +110,11 @@ export function buildPortfolioHistoryFromTransactions({
     }
 
     const sortedPoints = points.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
-    const byDay = new Map<string, PortfolioHistoryPoint>();
+    const byTimestamp = new Map<string, PortfolioHistoryPoint>();
     for (const point of sortedPoints) {
-      byDay.set(point.ts.slice(0, 10), point);
+      byTimestamp.set(point.ts, point);
     }
-    return Array.from(byDay.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+    return Array.from(byTimestamp.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
   }
 
   if (normalized.length === 0) {
@@ -163,12 +164,12 @@ export function buildPortfolioHistoryFromTransactions({
     });
   }
 
-  const byDay = new Map<string, PortfolioHistoryPoint>();
+  const byTimestamp = new Map<string, PortfolioHistoryPoint>();
   for (const point of points) {
-    byDay.set(point.ts.slice(0, 10), point);
+    byTimestamp.set(point.ts, point);
   }
 
-  const deduped = Array.from(byDay.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+  const deduped = Array.from(byTimestamp.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
 
   if (finite(latestValueUsd) && latestTs) {
     const parsedLatestTs = Date.parse(String(latestTs));

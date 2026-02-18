@@ -92,4 +92,25 @@ describe("buildPortfolioHistoryFromTransactions", () => {
     expect(history[0]?.valueUsd).toBeGreaterThan(0);
     expect(history[0]?.valueUsd).toBeLessThan(10000);
   });
+
+  it("does not let same-timestamp transactions overwrite the latest anchor point", () => {
+    const history = buildPortfolioHistoryFromTransactions({
+      transactions: [
+        {
+          ts: 1739870400,
+          assetKey: "ALGO",
+          amount: 0,
+          direction: "self",
+          unitPriceUsd: 0.09,
+          feeAlgo: 0.001
+        }
+      ],
+      latestValueUsd: 2188.2,
+      latestTs: "2025-02-18T00:00:00.000Z",
+      latestAssetStates: [{ assetKey: "ALGO", balance: 4.68, priceUsd: 0.09 }]
+    });
+
+    expect(history).toHaveLength(1);
+    expect(history[0]?.valueUsd).toBeCloseTo(2188.2, 2);
+  });
 });
