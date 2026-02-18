@@ -12,6 +12,12 @@ export type PortfolioHistoryPoint = {
   valueUsd: number;
 };
 
+export type LatestAssetState = {
+  assetKey: string;
+  balance: number;
+  priceUsd: number | null;
+};
+
 function finite(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
@@ -19,20 +25,102 @@ function finite(value: unknown): value is number {
 export function buildPortfolioHistoryFromTransactions({
   transactions,
   latestValueUsd,
-  latestTs
+  latestTs,
+  latestAssetStates
 }: {
   transactions: HistoryTransaction[];
   latestValueUsd?: number | null;
   latestTs?: string | Date | null;
+  latestAssetStates?: LatestAssetState[];
 }): PortfolioHistoryPoint[] {
-  const sorted = transactions
+  const normalized = transactions
     .filter((tx) => finite(tx.ts) && tx.ts > 0 && finite(tx.amount) && tx.amount >= 0)
     .sort((a, b) => a.ts - b.ts);
 
-  if (sorted.length === 0) {
+  const parsedLatestTs = latestTs ? Date.parse(String(latestTs)) : NaN;
+  const hasLatestAnchor =
+    Array.isArray(latestAssetStates) &&
+    latestAssetStates.length > 0 &&
+    Number.isFinite(parsedLatestTs) &&
+    parsedLatestTs > 0;
+
+  if (hasLatestAnchor) {
+    const balances = new Map<string, number>();
+    const lastPrice = new Map<string, number>();
+    const points: PortfolioHistoryPoint[] = [];
+
+    for (const asset of latestAssetStates ?? []) {
+      if (!asset.assetKey) continue;
+      if (finite(asset.balance) && asset.balance > 0) {
+        balances.set(asset.assetKey, asset.balance);
+      }
+      if (finite(asset.priceUsd) && asset.priceUsd >= 0) {
+        lastPrice.set(asset.assetKey, asset.priceUsd);
+      }
+    }
+
+    const computeValue = () => {
+      let total = 0;
+      for (const [assetKey, balance] of balances.entries()) {
+        if (!finite(balance) || balance <= 0) continue;
+        const price = lastPrice.get(assetKey);
+        if (!finite(price)) continue;
+        total += balance * price;
+      }
+      return total;
+    };
+
+    const setBalance = (assetKey: string, nextValue: number) => {
+      const clamped = Math.max(0, nextValue);
+      if (clamped <= 0) {
+        balances.delete(assetKey);
+      } else {
+        balances.set(assetKey, clamped);
+      }
+    };
+
+    points.push({
+      ts: new Date(parsedLatestTs).toISOString(),
+      valueUsd: finite(latestValueUsd) ? latestValueUsd : computeValue()
+    });
+
+    const descending = [...normalized].sort((a, b) => b.ts - a.ts);
+    for (const tx of descending) {
+      if (finite(tx.unitPriceUsd) && tx.unitPriceUsd >= 0) {
+        lastPrice.set(tx.assetKey, tx.unitPriceUsd);
+      }
+
+      const current = balances.get(tx.assetKey) ?? 0;
+      if (tx.direction === "in") {
+        setBalance(tx.assetKey, current - tx.amount);
+      } else if (tx.direction === "out") {
+        setBalance(tx.assetKey, current + tx.amount);
+      }
+
+      if (finite(tx.feeAlgo) && tx.feeAlgo > 0) {
+        const currentAlgo = balances.get("ALGO") ?? 0;
+        setBalance("ALGO", currentAlgo + tx.feeAlgo);
+      }
+
+      points.push({
+        ts: new Date(tx.ts * 1000).toISOString(),
+        valueUsd: computeValue()
+      });
+    }
+
+    const sortedPoints = points.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+    const byDay = new Map<string, PortfolioHistoryPoint>();
+    for (const point of sortedPoints) {
+      byDay.set(point.ts.slice(0, 10), point);
+    }
+    return Array.from(byDay.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+  }
+
+  if (normalized.length === 0) {
     return [];
   }
 
+  const sorted = [...normalized];
   const balances = new Map<string, number>();
   const lastPrice = new Map<string, number>();
   const points: PortfolioHistoryPoint[] = [];

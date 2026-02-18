@@ -37,6 +37,11 @@ export async function GET(request: Request) {
   const data = snapshot?.data as
     | {
         totals?: { valueUsd?: number | null };
+        assets?: Array<{
+          assetId?: number | null;
+          balance?: number | null;
+          priceUsd?: number | null;
+        }>;
         transactions?: Array<{
           ts?: number | null;
           assetKey?: string;
@@ -59,6 +64,11 @@ export async function GET(request: Request) {
         feeAlgo: tx.feeAlgo ?? 0
       }))
       .filter((tx) => tx.assetKey.length > 0),
+    latestAssetStates: (data?.assets ?? []).map((asset) => ({
+      assetKey: asset.assetId === null || asset.assetId === undefined ? "ALGO" : String(asset.assetId),
+      balance: asset.balance ?? 0,
+      priceUsd: asset.priceUsd ?? null
+    })),
     latestValueUsd: data?.totals?.valueUsd ?? null,
     latestTs: snapshot?.computedAt ?? null
   });

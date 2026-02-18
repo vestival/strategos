@@ -58,4 +58,38 @@ describe("buildPortfolioHistoryFromTransactions", () => {
     expect(history).toHaveLength(1);
     expect(history[0]?.valueUsd).toBeCloseTo(0.1);
   });
+
+  it("anchors replay to latest asset balances to avoid drift from incomplete older history", () => {
+    const history = buildPortfolioHistoryFromTransactions({
+      transactions: [
+        {
+          ts: 1738022400, // 2025-01-28
+          assetKey: "ALGO",
+          amount: 25000,
+          direction: "out",
+          unitPriceUsd: 0.12,
+          feeAlgo: 0
+        },
+        {
+          ts: 1738022400, // 2025-01-28
+          assetKey: "2537013734",
+          amount: 23491.03,
+          direction: "in",
+          unitPriceUsd: 0.09,
+          feeAlgo: 0
+        }
+      ],
+      latestValueUsd: 2189.38,
+      latestTs: "2026-02-18T11:57:26.000Z",
+      latestAssetStates: [
+        { assetKey: "ALGO", balance: 4.68, priceUsd: 0.09 },
+        { assetKey: "2537013734", balance: 23491.03, priceUsd: 0.09 }
+      ]
+    });
+
+    expect(history.length).toBeGreaterThan(0);
+    expect(history[history.length - 1]?.valueUsd).toBeCloseTo(2189.38, 2);
+    expect(history[0]?.valueUsd).toBeGreaterThan(0);
+    expect(history[0]?.valueUsd).toBeLessThan(10000);
+  });
 });
