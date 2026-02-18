@@ -53,4 +53,28 @@ describe("price provider resilience", () => {
     expect(second.ALGO).toBe(0.12);
     expect(second["31566704"]).toBe(1);
   });
+
+  it("falls back to DefiLlama when CoinGecko responses are unavailable", async () => {
+    process.env.PRICE_API_URL = "https://invalid-price-endpoint.example/prices";
+    process.env.DEFI_LLAMA_PRICE_API_URL = "https://coins.llama.fi/prices/current";
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(makeResponse({}, false))
+      .mockResolvedValueOnce(makeResponse({}, false))
+      .mockResolvedValueOnce(
+        makeResponse({
+          coins: {
+            "coingecko:algorand": { price: 0.15 },
+            "coingecko:usd-coin": { price: 1 }
+          }
+        })
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { getSpotPricesUsd } = await import("@/lib/price/provider");
+    const prices = await getSpotPricesUsd([null, 31566704]);
+
+    expect(prices.ALGO).toBe(0.15);
+    expect(prices["31566704"]).toBe(1);
+  });
 });

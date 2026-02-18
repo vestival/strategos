@@ -6,4 +6,5 @@ process.env.GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? "secret";
 process.env.ALGORAND_INDEXER_URL = process.env.ALGORAND_INDEXER_URL ?? "https://mainnet-idx.algonode.cloud";
 process.env.ALGORAND_VERIFICATION_RECEIVER = process.env.ALGORAND_VERIFICATION_RECEIVER ?? "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
 process.env.PRICE_API_URL = process.env.PRICE_API_URL ?? "https://api.coingecko.com/api/v3/simple/price";
+process.env.DEFI_LLAMA_PRICE_API_URL = process.env.DEFI_LLAMA_PRICE_API_URL ?? "https://coins.llama.fi/prices/current";
 process.env.ASA_PRICE_MAP_JSON = process.env.ASA_PRICE_MAP_JSON ?? "{}";

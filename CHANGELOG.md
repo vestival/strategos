@@ -39,6 +39,9 @@ All notable changes to the Algorand Portfolio Tracker are documented in this fil
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- Added multi-provider spot pricing fallback chain: configured `PRICE_API_URL` -> default CoinGecko -> DefiLlama, reducing `no price` outages when one provider is unavailable (`src/lib/price/provider.ts`) (2026-02-18 20:03 MST)
+- Added last-known-good spot cache reuse across providers so previously fetched prices are retained during transient API failures (`src/lib/price/provider.ts`) (2026-02-18 20:03 MST)
+- Added regression coverage for DefiLlama fallback path in price provider tests (`tests/price-provider.test.ts`) (2026-02-18 20:03 MST)
 - Spot price fetching is now resilient: if `PRICE_API_URL` fails or returns empty data, the app retries against CoinGecko default endpoint and falls back to last known good cached prices to avoid showing `no price` for all assets during transient outages (`src/lib/price/provider.ts`) (2026-02-18 19:58 MST)
 - Added regression tests for price-provider fallback and cached-price recovery on endpoint failures (`tests/price-provider.test.ts`) (2026-02-18 19:58 MST)
 - FIFO cost basis no longer drifts with refresh-only spot price moves: lot accounting now uses historical acquisition-time prices only (no spot fallback in parser/FIFO path), while transaction display still falls back to spot when needed (2026-02-17 19:31 MST)

@@ -30,6 +30,7 @@ const envSchema = z.object({
   ALGORAND_ALGOD_TOKEN: optionalString,
   ALGORAND_VERIFICATION_RECEIVER: z.string().min(1),
   PRICE_API_URL: z.string().url().default("https://api.coingecko.com/api/v3/simple/price"),
+  DEFI_LLAMA_PRICE_API_URL: z.string().url().default("https://coins.llama.fi/prices/current"),
   ASA_PRICE_MAP_JSON: z.string().default("{}"),
   TINYMAN_APP_IDS: optionalString,
   FOLKS_APP_IDS: optionalString,

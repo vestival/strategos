@@ -4,6 +4,7 @@ const env = getEnv();
 
 const ALGO_CG_ID = "algorand";
 const DEFAULT_CG_SIMPLE_PRICE_URL = "https://api.coingecko.com/api/v3/simple/price";
+const DEFAULT_LLAMA_PRICE_URL = "https://coins.llama.fi/prices/current";
 const DEFAULT_ASA_CG_MAP: Record<number, string> = {
   // Stablecoins
   31566704: "usd-coin", // USDC (Algorand)
@@ -103,6 +104,36 @@ async function fetchSpotPriceMap(endpoint: string, coinIds: string[]): Promise<P
   }
 }
 
+async function fetchDefiLlamaPriceMap(endpoint: string, coinIds: string[]): Promise<PriceMap> {
+  if (coinIds.length === 0) {
+    return {};
+  }
+
+  try {
+    const normalizedBase = endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint;
+    const coinsKey = coinIds.map((coinId) => `coingecko:${coinId}`).join(",");
+    const url = `${normalizedBase}/${encodeURIComponent(coinsKey)}`;
+    const response = await fetch(url, { next: { revalidate: 0 } });
+    if (!response.ok) {
+      return {};
+    }
+    const data = (await response.json()) as {
+      coins?: Record<string, { price?: unknown }>;
+    };
+    const out: PriceMap = {};
+    for (const coinId of coinIds) {
+      const key = `coingecko:${coinId}`;
+      const price = data.coins?.[key]?.price;
+      if (typeof price === "number" && Number.isFinite(price) && price >= 0) {
+        out[coinId] = { usd: price };
+      }
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 export async function getSpotPricesUsd(assetIds: Array<number | null>): Promise<Record<string, number | null>> {
   const unique = Array.from(new Set(assetIds.map((id) => (id === null ? "ALGO" : String(id)))));
 
@@ -135,6 +166,24 @@ export async function getSpotPricesUsd(assetIds: Array<number | null>): Promise<
       const hasAllRequested = requestedCoinIds.every((coinId) => typeof prices[coinId]?.usd === "number");
       if (hasAllRequested) {
         break;
+      }
+    }
+
+    const missingAfterCg = requestedCoinIds.filter((coinId) => typeof prices[coinId]?.usd !== "number");
+    if (missingAfterCg.length > 0) {
+      const llamaEndpoints = Array.from(new Set([env.DEFI_LLAMA_PRICE_API_URL, DEFAULT_LLAMA_PRICE_URL]));
+      for (const endpoint of llamaEndpoints) {
+        const fetched = await fetchDefiLlamaPriceMap(endpoint, missingAfterCg);
+        if (Object.keys(fetched).length > 0) {
+          prices = {
+            ...prices,
+            ...fetched
+          };
+        }
+        const hasAllMissing = missingAfterCg.every((coinId) => typeof prices[coinId]?.usd === "number");
+        if (hasAllMissing) {
+          break;
+        }
       }
     }
 
