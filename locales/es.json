@@ -151,7 +151,7 @@
     },
     "settings": {
       "theme": "Visualización",
-      "themeDesc": "Strategos opera en modo oscuro por diseño.",
+      "themeDesc": "Elige tu tema de interfaz preferido.",
       "fifo": "Metodo de costo base: FIFO. El modo promedio se deja para una extension futura.",
       "walletMgmt": "Gestion de wallets",
       "walletMgmtDesc": "Vincula, verifica y elimina wallets de tu perfil.",
@@ -162,7 +162,7 @@
       "deleteAccountDesc": "Elimina permanentemente tu usuario, wallets vinculadas, snapshots, sesiones y logs de auditoria.",
       "deleteAccountConfirm": "Eliminar tu cuenta de forma permanente? Esta accion no se puede deshacer.",
       "deleteAccountFailed": "No se pudo eliminar la cuenta.",
-      "darkOnly": "Modo oscuro"
+      "darkOnly": "Selector de tema disponible en la cabecera"
     },
     "footer": {
       "lastSnapshot": "Ultimo snapshot",

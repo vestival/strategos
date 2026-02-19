@@ -29,25 +29,25 @@ export function LegalPage({ kind }: { kind: "privacy" | "terms" }) {
   };
 
   return (
-    <main className="min-h-screen bg-[#0F172A] text-[#F8FAFC]">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0F172A] dark:text-[#F8FAFC]">
       <div className="mx-auto max-w-4xl px-4 py-10 md:px-8">
         <div className="mb-8 flex items-center justify-between gap-3">
           <h1 className="font-brand text-3xl">{content.title}</h1>
           <LanguageToggle />
         </div>
 
-        <article className="space-y-6 rounded-xl border border-[#1E293B] bg-[#0B1630] p-6">
+        <article className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 dark:border-[#1E293B] dark:bg-[#0B1630]">
           <header className="space-y-2">
             <h2 className="text-2xl font-semibold">{content.heading}</h2>
-            <p className="text-sm text-[#94A3B8]">{content.lastUpdated.replace("{date}", dateText)}</p>
-            {content.intro ? <p className="text-[#CBD5E1]">{content.intro}</p> : null}
+            <p className="text-sm text-slate-500 dark:text-[#94A3B8]">{content.lastUpdated.replace("{date}", dateText)}</p>
+            {content.intro ? <p className="text-slate-600 dark:text-[#CBD5E1]">{content.intro}</p> : null}
           </header>
 
           {content.sections.map((section) => (
             <section className="space-y-2" key={section.title}>
               <h3 className="text-lg font-semibold">{section.title}</h3>
               {section.body.map((line, idx) => (
-                <p className="text-sm leading-6 text-[#CBD5E1]" key={`${section.title}-${idx}`}>
+                <p className="text-sm leading-6 text-slate-600 dark:text-[#CBD5E1]" key={`${section.title}-${idx}`}>
                   {line.replace("{email}", supportEmail)}
                 </p>
               ))}

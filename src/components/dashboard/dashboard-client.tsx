@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { UserMenu } from "@/components/auth-buttons";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { apiFetch } from "@/lib/api-client";
 import {
   alignSeriesByTimestamp,
@@ -502,17 +503,17 @@ export function DashboardClient() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0F172A] text-[#F8FAFC]">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0F172A] dark:text-[#F8FAFC]">
       <div className="mx-auto max-w-6xl p-4 md:p-8">
         <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="font-brand text-3xl font-semibold tracking-wide">{m.dashboard.title}</h1>
-            <p className="text-sm text-[#94A3B8]">{m.dashboard.subtitle}</p>
+            <p className="text-sm text-slate-600 dark:text-[#94A3B8]">{m.dashboard.subtitle}</p>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <button
               aria-label={privacyMode ? m.dashboard.showAmounts : m.dashboard.hideAmounts}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#334155] text-lg hover:bg-[#1E293B]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-300 text-lg hover:bg-slate-100 dark:border-[#334155] dark:hover:bg-[#1E293B]"
               onClick={() => setPrivacyMode((prev) => !prev)}
               title={privacyMode ? m.dashboard.showAmounts : m.dashboard.hideAmounts}
               type="button"
@@ -528,6 +529,7 @@ export function DashboardClient() {
               {refreshMutation.isPending ? m.dashboard.refreshing : m.dashboard.refresh}
             </button>
             <LanguageToggle compact />
+            <ThemeToggle />
             <UserMenu />
           </div>
         </header>
@@ -536,7 +538,7 @@ export function DashboardClient() {
           {tabs.map((tab) => (
             <button
               className={`rounded-md px-3 py-1.5 text-sm ${
-                activeTab === tab ? "bg-brand-700 text-white" : "bg-[#1E293B] text-[#CBD5E1]"
+                activeTab === tab ? "bg-brand-700 text-white" : "bg-slate-200 text-slate-700 dark:bg-[#1E293B] dark:text-[#CBD5E1]"
               }`}
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -547,10 +549,10 @@ export function DashboardClient() {
           ))}
         </nav>
 
-        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-[#1E293B] bg-[#0B1630] p-2">
-          <span className="text-xs uppercase tracking-wide text-[#94A3B8]">{m.dashboard.scope?.label ?? "Scope"}</span>
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-2 dark:border-[#1E293B] dark:bg-[#0B1630]">
+          <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-[#94A3B8]">{m.dashboard.scope?.label ?? "Scope"}</span>
           <select
-            className="rounded-md border border-[#334155] bg-[#0F172A] px-2 py-1.5 text-sm text-[#E2E8F0]"
+            className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700 dark:border-[#334155] dark:bg-[#0F172A] dark:text-[#E2E8F0]"
             value={selectedBundleId}
             onChange={(event) => setSelectedBundleId(event.target.value)}
           >
@@ -562,7 +564,7 @@ export function DashboardClient() {
           </select>
           <button
             type="button"
-            className="rounded-md border border-[#334155] px-2 py-1.5 text-xs text-[#CBD5E1] hover:bg-[#1E293B]"
+            className="rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-100 dark:border-[#334155] dark:text-[#CBD5E1] dark:hover:bg-[#1E293B]"
             onClick={createBundle}
           >
             {m.dashboard.scope?.saveCurrent ?? "Save current as bundle"}
@@ -575,7 +577,7 @@ export function DashboardClient() {
           >
             {m.dashboard.scope?.delete ?? "Delete bundle"}
           </button>
-          <span className="ml-auto text-xs text-[#94A3B8]">
+          <span className="ml-auto text-xs text-slate-500 dark:text-[#94A3B8]">
             {(m.dashboard.scope?.walletsInScope ?? "{count} wallets").replace("{count}", String(scopedWallets.length))}
           </span>
         </div>

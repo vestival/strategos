@@ -3,13 +3,22 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
+}
+
+.dark {
   color-scheme: dark;
 }
 
 body {
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark body {
   background: #0f172a;
   color: #f8fafc;
-  font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
 .font-brand {
