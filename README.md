@@ -148,6 +148,9 @@ npm run dev
 - `PUBLIC_RATE_LIMIT_WINDOW_MS`
 - `PUBLIC_RATE_LIMIT_MAX`
 - `INDEXER_TX_LIMIT`
+- `MANUAL_REFRESH_DAILY_MAX`
+- `REFRESH_EXEMPT_EMAIL`
+- `CRON_SECRET`
 - `NEXTAUTH_DEBUG`
 - `NEXT_PUBLIC_BASE_URL`
 - `NEXT_PUBLIC_SUPPORT_EMAIL`
@@ -181,6 +184,14 @@ npm run build
 ```bash
 vercel --prod
 ```
+
+6. Configure daily automatic refresh:
+  - `vercel.json` schedules `/api/cron/daily-refresh` at `00:00 UTC`
+  - set `CRON_SECRET` in Vercel so cron calls are authorized
+
+7. Manual refresh policy:
+  - users can manually refresh up to `MANUAL_REFRESH_DAILY_MAX` times per UTC day (default: 2)
+  - `REFRESH_EXEMPT_EMAIL` bypasses that daily manual limit
 
 6. Initialize database schema (first deploy):
 

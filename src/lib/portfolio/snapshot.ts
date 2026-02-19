@@ -295,16 +295,16 @@ export async function computePortfolioSnapshot(wallets: string[], deps: Snapshot
 
   const totals = assets.reduce(
     (acc, row) => {
-      if (row.valueUsd !== null && Number.isFinite(row.valueUsd)) {
+      if (row.balance > 0 && row.valueUsd !== null && Number.isFinite(row.valueUsd)) {
         acc.valueUsd += row.valueUsd;
       }
-      if (Number.isFinite(row.costBasisUsd)) {
+      if (row.balance > 0 && Number.isFinite(row.costBasisUsd)) {
         acc.costBasisUsd += row.costBasisUsd;
       }
       if (Number.isFinite(row.realizedPnlUsd)) {
         acc.realizedPnlUsd += row.realizedPnlUsd;
       }
-      if (row.unrealizedPnlUsd !== null && Number.isFinite(row.unrealizedPnlUsd)) {
+      if (row.balance > 0 && row.unrealizedPnlUsd !== null && Number.isFinite(row.unrealizedPnlUsd)) {
         acc.unrealizedPnlUsd += row.unrealizedPnlUsd;
       }
       return acc;

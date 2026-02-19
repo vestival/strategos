@@ -12,6 +12,13 @@ import { assertSameOrigin, getClientIp } from "@/lib/security/request";
 
 const env = getEnv();
 
+function getUtcDayBounds(now = new Date()) {
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return { start, end };
+}
+
 export async function POST(request: Request) {
   const originCheck = assertSameOrigin(request);
   if (!originCheck.ok) {
@@ -51,6 +58,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No verified wallets linked" }, { status: 400 });
   }
 
+  const userEmail = session.user.email?.toLowerCase() ?? null;
+  const exemptEmail = env.REFRESH_EXEMPT_EMAIL.toLowerCase();
+  const isExempt = userEmail === exemptEmail;
+  if (!isExempt) {
+    const { start, end } = getUtcDayBounds();
+    const manualRefreshesToday = await prisma.auditLog.count({
+      where: {
+        userId: session.user.id,
+        action: "portfolio.refresh.manual",
+        createdAt: {
+          gte: start,
+          lt: end
+        }
+      }
+    });
+    if (manualRefreshesToday >= env.MANUAL_REFRESH_DAILY_MAX) {
+      return NextResponse.json(
+        {
+          error: `Daily manual refresh limit reached (${env.MANUAL_REFRESH_DAILY_MAX}). Next window opens at 00:00 UTC.`
+        },
+        { status: 429 }
+      );
+    }
+  }
+
   const snapshot = await computePortfolioSnapshot(walletAddresses);
 
   await prisma.portfolioSnapshot.create({
@@ -61,7 +93,7 @@ export async function POST(request: Request) {
     }
   });
 
-  await writeAuditLog(session.user.id, "portfolio.refresh", {
+  await writeAuditLog(session.user.id, "portfolio.refresh.manual", {
     walletCount: walletAddresses.length
   });
 

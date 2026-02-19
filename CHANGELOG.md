@@ -5,6 +5,7 @@ All notable changes to Strategos are documented in this file.
 ## [Unreleased]
 
 ### Added
+- Daily automatic portfolio recompute endpoint for Vercel Cron (`/api/cron/daily-refresh`) secured with `CRON_SECRET`, intended to run at `00:00 UTC` (`vercel.json`) (2026-02-19 11:13 MST)
 - Strategos brand system documentation with identity standards, tone, typography, and color tokens in `docs/BRANDING.md` (2026-02-18 06:27 MST)
 - Legal pages with EN/ES localized content: `/privacy` and `/terms`, including dynamic last-updated date and support email placeholder sourced from environment configuration (2026-02-18 06:27 MST)
 - Global footer with Strategos identity, legal links, and current-year copyright on all app pages (2026-02-18 06:27 MST)
@@ -46,6 +47,9 @@ All notable changes to Strategos are documented in this file.
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- Manual refresh policy enforced server-side: max `2` manual refreshes per UTC day per user, with exemption for `victor.estival@gmail.com` (`MANUAL_REFRESH_DAILY_MAX`, `REFRESH_EXEMPT_EMAIL`) (2026-02-19 11:13 MST)
+- Portfolio history now uses UTC daily close points (EOD) from anchored balances plus per-day pricing, eliminating misleading intra-day jumps that did not match transaction understanding (`src/lib/portfolio/history.ts`, `src/app/api/portfolio/history/route.ts`) (2026-02-19 11:13 MST)
+- Snapshot top-level totals now aggregate cost basis/value/unrealized only from assets with positive current balance, aligning summary cards with visible active holdings (`src/lib/portfolio/snapshot.ts`) (2026-02-19 11:13 MST)
 - Cost basis and transaction completeness fix: Indexer ingestion now fetches all transaction types (not only `pay`/`axfer`) so app-call transactions with inner transfers are included; this restores missing DeFi swap legs (for example TALGO receives) that were causing `cost basis = 0` and distorted PnL/history (`src/lib/algorand/indexer.ts`) (2026-02-19 07:35 MST)
 - Added regression test to ensure inner asset transfers from app-call roots are ingested and available for portfolio accounting (`tests/indexer.test.ts`) (2026-02-19 07:35 MST)
 - History range filter no longer backfills with unrelated older points when only one point exists in the selected range, reducing misleading range-change jumps (`src/components/dashboard/dashboard-client.tsx`) (2026-02-19 07:35 MST)

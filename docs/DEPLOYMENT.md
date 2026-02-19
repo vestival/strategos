@@ -55,6 +55,12 @@ Add these in Vercel: Project -> Settings -> Environment Variables
   - Example: `https://strategos.vestival.es`
 - `NEXT_PUBLIC_SUPPORT_EMAIL`
   - Example: `support@strategos.vestival.es`
+- `MANUAL_REFRESH_DAILY_MAX`
+  - Example: `2` (manual refreshes per UTC day)
+- `REFRESH_EXEMPT_EMAIL`
+  - Example: `victor.estival@gmail.com`
+- `CRON_SECRET`
+  - Secret token used to authorize Vercel Cron calls to `/api/cron/daily-refresh`
 
 ## 3) Google OAuth setup
 In Google Cloud Console -> OAuth client:
@@ -76,7 +82,13 @@ After env vars are set:
 vercel --prod
 ```
 
-## 5) Prisma migration on production DB
+## 5) Daily automatic refresh (00:00 UTC)
+- The project includes `vercel.json` with:
+  - schedule: `0 0 * * *`
+  - path: `/api/cron/daily-refresh`
+- Ensure `CRON_SECRET` is set in Vercel (Production) so cron authorization succeeds.
+
+## 6) Prisma migration on production DB
 Run once after first deploy and on schema changes:
 
 ```bash
@@ -85,13 +97,15 @@ npx prisma migrate deploy
 
 If your local machine IP is not allowed to reach DB, run migrations in CI or from a trusted environment.
 
-## 6) Post-deploy checks
+## 7) Post-deploy checks
 - Open `/` and verify Google sign-in works
 - Link wallet and complete note-transaction verification
 - Press Refresh on dashboard and confirm snapshot is created
 - Confirm `/api/portfolio/snapshot` returns snapshot for signed-in user
+- Confirm manual refresh is capped after 2 calls/day (UTC), except exempt email
+- Confirm automatic refresh job appears in Vercel cron logs
 
-## 7) Common failure fixes
+## 8) Common failure fixes
 - Build fails with "Invalid environment variables":
   - Missing env vars in Vercel production scope
 - Google login fails:

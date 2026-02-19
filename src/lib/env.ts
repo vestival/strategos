@@ -38,6 +38,9 @@ const envSchema = z.object({
   PUBLIC_RATE_LIMIT_WINDOW_MS: positiveIntWithDefault(60_000),
   PUBLIC_RATE_LIMIT_MAX: positiveIntWithDefault(60),
   INDEXER_TX_LIMIT: positiveIntWithDefault(500),
+  MANUAL_REFRESH_DAILY_MAX: positiveIntWithDefault(2),
+  REFRESH_EXEMPT_EMAIL: z.string().email().default("victor.estival@gmail.com"),
+  CRON_SECRET: optionalString,
   NEXT_PUBLIC_BASE_URL: z.string().url().default("https://strategos.vestival.es"),
   NEXT_PUBLIC_SUPPORT_EMAIL: z.string().email().default("support@strategos.vestival.es"),
   NEXTAUTH_DEBUG: z.preprocess((value) => {

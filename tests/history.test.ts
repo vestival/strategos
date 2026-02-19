@@ -113,4 +113,33 @@ describe("buildPortfolioHistoryFromTransactions", () => {
     expect(history).toHaveLength(1);
     expect(history[0]?.valueUsd).toBeCloseTo(2188.2, 2);
   });
+
+  it("builds UTC end-of-day points for anchored history", () => {
+    const history = buildPortfolioHistoryFromTransactions({
+      transactions: [
+        {
+          ts: 1738020000, // 2025-01-28T03:20:00Z
+          assetKey: "ALGO",
+          amount: 10,
+          direction: "in",
+          unitPriceUsd: 0.1,
+          feeAlgo: 0
+        },
+        {
+          ts: 1738106400, // 2025-01-29T03:20:00Z
+          assetKey: "ALGO",
+          amount: 5,
+          direction: "out",
+          unitPriceUsd: 0.2,
+          feeAlgo: 0
+        }
+      ],
+      latestValueUsd: 1,
+      latestTs: "2025-01-29T23:30:00.000Z",
+      latestAssetStates: [{ assetKey: "ALGO", balance: 5, priceUsd: 0.2 }]
+    });
+
+    expect(history.length).toBeGreaterThanOrEqual(2);
+    expect(history.every((point) => point.ts.endsWith("T23:59:59.999Z"))).toBe(true);
+  });
 });
