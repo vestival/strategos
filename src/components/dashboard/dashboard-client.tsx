@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { UserMenu } from "@/components/auth-buttons";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -81,8 +81,11 @@ type SnapshotResponse = {
       protocol: string;
       wallet: string;
       positionType: string;
+      assetId?: number | null;
+      amount?: number;
       valueUsd?: number | null;
       estimated: boolean;
+      meta?: Record<string, unknown>;
     }>;
     yieldEstimate: {
       estimatedAprPct: number | null;
@@ -113,6 +116,7 @@ export function DashboardClient() {
   const [txTypeFilter, setTxTypeFilter] = useState<"all" | "payment" | "asset-transfer">("all");
   const [txSearch, setTxSearch] = useState("");
   const [defiSearch, setDefiSearch] = useState("");
+  const [expandedDefiRowId, setExpandedDefiRowId] = useState<string | null>(null);
   const [historyRange, setHistoryRange] = useState<HistoryRange>("30d");
   const [analyticsRange, setAnalyticsRange] = useState<HistoryRange>("30d");
   const [analyticsMetric, setAnalyticsMetric] = useState<AnalyticsMetric>("value");
@@ -333,6 +337,7 @@ export function DashboardClient() {
     );
   });
   const defaultAprPct = snapshot?.yieldEstimate.estimatedAprPct ?? 0;
+  const algoSpotPriceUsd = snapshot?.assets.find((asset) => asset.assetKey === "ALGO")?.priceUsd ?? null;
   const defiRows = (snapshot?.defiPositions ?? [])
     .filter((position) => scopedWalletSet.has(position.wallet))
     .map((p, index) => {
@@ -345,11 +350,29 @@ export function DashboardClient() {
     const aprPct = defaultAprPct;
     const dailyYieldUsd = nowUsd > 0 ? (nowUsd * (aprPct / 100)) / 365 : null;
 
+    const assetLabel =
+      p.meta && typeof p.meta === "object" && typeof p.meta.assetLabel === "string" ? p.meta.assetLabel : p.assetId ? `ASA ${p.assetId}` : m.dashboard.defi.unknownAsset;
+    const tokenDetail =
+      p.amount && p.amount > 0
+        ? [
+            {
+              key: `${p.assetId ?? "unknown"}-${p.wallet}-${index}`,
+              label: assetLabel,
+              assetId: p.assetId ?? null,
+              amount: p.amount,
+              valueUsd: p.valueUsd ?? null,
+              valueAlgo: p.valueUsd !== null && p.valueUsd !== undefined && algoSpotPriceUsd ? p.valueUsd / algoSpotPriceUsd : null
+            }
+          ]
+        : [];
+
     return {
       id: `${p.protocol}-${p.wallet}-${p.positionType}-${index}`,
       protocol: p.protocol,
       wallet: p.wallet,
       positionType: p.positionType,
+      assetId: p.assetId ?? null,
+      amount: p.amount ?? null,
       estimated: p.estimated,
       atDepositUsd,
       nowUsd: p.valueUsd ?? null,
@@ -357,7 +380,9 @@ export function DashboardClient() {
       pnlUsd,
       pnlPct,
       aprPct: aprPct || null,
-      dailyYieldUsd
+      dailyYieldUsd,
+      meta: p.meta ?? null,
+      detailTokens: tokenDetail
     };
     });
   const filteredDefiRows = defiRows.filter((row) => {
@@ -849,27 +874,69 @@ export function DashboardClient() {
                 </thead>
                 <tbody>
                   {filteredDefiRows.map((row) => (
-                    <tr className="border-t border-slate-200 dark:border-slate-800" key={row.id}>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-slate-900 dark:text-slate-100">
-                          {row.protocol} {m.dashboard.defi.vaultSuffix}
-                        </div>
-                        <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                          <span className="rounded bg-slate-100 px-2 py-0.5 uppercase dark:bg-slate-800">{row.positionType}</span>
-                          {row.estimated && <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">{m.dashboard.defi.estimated}</span>}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-400 dark:text-slate-500">{shortAddress(row.wallet)}</div>
-                      </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(row.atDepositUsd)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(row.nowUsd)}</td>
-                      <td className="px-4 py-3 text-emerald-600 dark:text-emerald-300">{maskUsd(row.yieldUsd)}</td>
-                      <td className="px-4 py-3">
-                        <div className={`${(row.pnlUsd ?? 0) >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}>{maskUsd(row.pnlUsd)}</div>
-                        <div className="text-xs text-slate-400 dark:text-slate-500">{privacyMode ? "******" : row.pnlPct === null ? "-" : `${row.pnlPct.toFixed(2)}%`}</div>
-                      </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{privacyMode ? "******" : row.aprPct === null ? "-" : `${row.aprPct.toFixed(2)}%`}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(row.dailyYieldUsd)}</td>
-                    </tr>
+                    <Fragment key={row.id}>
+                      <tr
+                        className="cursor-pointer border-t border-slate-200 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/30"
+                        onClick={() => setExpandedDefiRowId((current) => (current === row.id ? null : row.id))}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-slate-900 dark:text-slate-100">
+                            {row.protocol} {m.dashboard.defi.vaultSuffix}
+                          </div>
+                          <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                            <span className="rounded bg-slate-100 px-2 py-0.5 uppercase dark:bg-slate-800">{row.positionType}</span>
+                            {row.estimated && <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">{m.dashboard.defi.estimated}</span>}
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                              {expandedDefiRowId === row.id ? m.dashboard.defi.hideDetails : m.dashboard.defi.viewDetails}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-xs text-slate-400 dark:text-slate-500">{shortAddress(row.wallet)}</div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(row.atDepositUsd)}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(row.nowUsd)}</td>
+                        <td className="px-4 py-3 text-emerald-600 dark:text-emerald-300">{maskUsd(row.yieldUsd)}</td>
+                        <td className="px-4 py-3">
+                          <div className={`${(row.pnlUsd ?? 0) >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}>{maskUsd(row.pnlUsd)}</div>
+                          <div className="text-xs text-slate-400 dark:text-slate-500">{privacyMode ? "******" : row.pnlPct === null ? "-" : `${row.pnlPct.toFixed(2)}%`}</div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{privacyMode ? "******" : row.aprPct === null ? "-" : `${row.aprPct.toFixed(2)}%`}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(row.dailyYieldUsd)}</td>
+                      </tr>
+                      {expandedDefiRowId === row.id && (
+                        <tr className="border-t border-slate-200 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-950/40">
+                          <td className="px-4 py-3" colSpan={7}>
+                            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{m.dashboard.defi.tokenBreakdown}</div>
+                            {row.detailTokens.length > 0 ? (
+                              <div className="space-y-1 text-sm text-slate-700 dark:text-slate-200">
+                                {row.detailTokens.map((token) => (
+                                  <div className="flex flex-wrap items-center justify-between gap-2" key={token.key}>
+                                    <div>
+                                      <span className="font-medium">{token.label}</span>
+                                      {token.assetId ? (
+                                        <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">ASA {token.assetId}</span>
+                                      ) : null}
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+                                      <span>
+                                        {m.dashboard.defi.amount}: {maskNumber(token.amount)}
+                                      </span>
+                                      <span>
+                                        USD: {maskUsd(token.valueUsd)}
+                                      </span>
+                                      <span>
+                                        ALGO: {maskAlgo(token.valueAlgo)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-slate-500 dark:text-slate-400">{m.dashboard.defi.noTokenDetails}</div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   ))}
                   {!filteredDefiRows.length && (
                     <tr>

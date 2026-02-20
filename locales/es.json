@@ -131,6 +131,12 @@
       "yieldEstimate": "Rendimiento estimado",
       "estimated": "estimado",
       "positions": "posiciones",
+      "viewDetails": "ver detalle de tokens",
+      "hideDetails": "ocultar detalle de tokens",
+      "tokenBreakdown": "Desglose de tokens",
+      "amount": "Cantidad",
+      "noTokenDetails": "Aun no hay detalle por token disponible para esta posicion.",
+      "unknownAsset": "Activo desconocido",
       "searchPlaceholder": "Buscar protocolo, tipo, wallet",
       "headers": {
         "vault": "Vault",
