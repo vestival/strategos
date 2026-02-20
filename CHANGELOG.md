@@ -19,6 +19,8 @@ All notable changes to Strategos are documented in this file.
 - DeFi holdings inference for known Algorand liquid-staking assets (`xALGO`, `gALGO`, `tALGO`) so DeFi rows appear even when app-local-state-only detection is incomplete (`src/lib/defi/inferred.ts`, `src/lib/defi/index.ts`) (2026-02-20 06:53 MST)
 - Regression tests for holdings-based DeFi inference (`tests/defi-inferred.test.ts`) (2026-02-20 06:53 MST)
 - Expandable DeFi row details: clicking a DeFi vault row now reveals token-level breakdown (asset label/ASA id, amount, USD value, and ALGO value when available), enabling Tinyman detail inspection from the table without leaving the dashboard (`src/components/dashboard/dashboard-client.tsx`, `locales/en.json`, `locales/es.json`) (2026-02-20 08:28 MST)
+- Tinyman adapter enrichment for LP-like holdings: detects Tinyman pool-token assets from wallet holdings (`unit-name/name` heuristics), attaches component metadata to DeFi rows, and computes position USD totals from spot prices for richer row expansion detail (`src/lib/defi/adapters/tinyman.ts`, `src/components/dashboard/dashboard-client.tsx`) (2026-02-20 08:36 MST)
+- Added Tinyman adapter regression tests for LP component enrichment and app-state placeholder fallback (`tests/tinyman-adapter.test.ts`) (2026-02-20 08:36 MST)
 
 ## [0.2.0] - 2026-02-20
 

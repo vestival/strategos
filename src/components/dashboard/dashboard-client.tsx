@@ -350,9 +350,43 @@ export function DashboardClient() {
     const aprPct = defaultAprPct;
     const dailyYieldUsd = nowUsd > 0 ? (nowUsd * (aprPct / 100)) / 365 : null;
 
+    const metaRecord = p.meta && typeof p.meta === "object" ? (p.meta as Record<string, unknown>) : null;
+    const metaComponents = Array.isArray(metaRecord?.components)
+      ? metaRecord.components
+          .map((component, componentIndex) => {
+            if (!component || typeof component !== "object") {
+              return null;
+            }
+            const record = component as Record<string, unknown>;
+            const amount = typeof record.amount === "number" && Number.isFinite(record.amount) ? record.amount : null;
+            if (amount === null || amount <= 0) {
+              return null;
+            }
+            const label = typeof record.label === "string" && record.label ? record.label : m.dashboard.defi.unknownAsset;
+            const assetId = typeof record.assetId === "number" && Number.isInteger(record.assetId) ? record.assetId : null;
+            const valueUsd = typeof record.valueUsd === "number" && Number.isFinite(record.valueUsd) ? record.valueUsd : null;
+            return {
+              key: `${assetId ?? "unknown"}-${p.wallet}-${index}-meta-${componentIndex}`,
+              label,
+              assetId,
+              amount,
+              valueUsd,
+              valueAlgo: valueUsd !== null && algoSpotPriceUsd ? valueUsd / algoSpotPriceUsd : null
+            };
+          })
+          .filter((component): component is {
+            key: string;
+            label: string;
+            assetId: number | null;
+            amount: number;
+            valueUsd: number | null;
+            valueAlgo: number | null;
+          } => component !== null)
+      : [];
+
     const assetLabel =
       p.meta && typeof p.meta === "object" && typeof p.meta.assetLabel === "string" ? p.meta.assetLabel : p.assetId ? `ASA ${p.assetId}` : m.dashboard.defi.unknownAsset;
-    const tokenDetail =
+    const inferredSingleToken =
       p.amount && p.amount > 0
         ? [
             {
@@ -365,6 +399,7 @@ export function DashboardClient() {
             }
           ]
         : [];
+    const tokenDetail = metaComponents.length > 0 ? metaComponents : inferredSingleToken;
 
     return {
       id: `${p.protocol}-${p.wallet}-${p.positionType}-${index}`,
