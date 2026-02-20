@@ -22,7 +22,7 @@ import {
 import { computePositionAtDepositUsd } from "@/lib/defi/metrics";
 import { formatAlgo, formatUsd, formatUsdPrecise, getAlgorandExplorerTxUrl, shortAddress } from "@/lib/utils";
 
-type PriceSource = "configured" | "coingecko" | "defillama" | "cache" | "missing";
+type PriceSource = "configured" | "coingecko" | "defillama" | "dexscreener" | "cache" | "missing";
 type PriceConfidence = "high" | "medium" | "low";
 
 type SnapshotResponse = {
@@ -936,19 +936,18 @@ export function DashboardClient() {
                 <tbody>
                   {filteredDefiRows.map((row) => (
                     <Fragment key={row.id}>
-                      <tr className="border-t border-slate-200 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/30">
+                      <tr
+                        className="cursor-pointer border-t border-slate-200 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/30"
+                        onClick={() => setExpandedDefiRowId((current) => (current === row.id ? null : row.id))}
+                      >
                         <td className="px-4 py-3">
                           <div className="flex items-start justify-between gap-2">
                             <div className="font-medium text-slate-900 dark:text-slate-100">
                               {row.protocol} {m.dashboard.defi.vaultSuffix}
                             </div>
-                            <button
-                              className="rounded-md border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                              onClick={() => setExpandedDefiRowId((current) => (current === row.id ? null : row.id))}
-                              type="button"
-                            >
+                            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                               {expandedDefiRowId === row.id ? m.dashboard.defi.hideDetails : m.dashboard.defi.viewDetails}
-                            </button>
+                            </span>
                           </div>
                           <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                             <span className="rounded bg-slate-100 px-2 py-0.5 uppercase dark:bg-slate-800">{row.positionType}</span>

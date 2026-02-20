@@ -36,6 +36,9 @@ Add these in Vercel: Project -> Settings -> Environment Variables
   - Example: `https://api.coingecko.com/api/v3/simple/price`
 - `DEFI_LLAMA_PRICE_API_URL`
   - Example: `https://coins.llama.fi/prices/current`
+- `DEXSCREENER_PRICE_API_URL`
+  - Example: `https://api.dexscreener.com/latest/dex/search`
+  - Used as fallback for ASA spot prices when CoinGecko/DefiLlama mapping is missing.
 - `ASA_PRICE_MAP_JSON`
   - Example: `{"31566704":"usd-coin","312769":"tether"}`
   - Note: app includes built-in defaults for common ASAs; this var is for overrides/extensions.

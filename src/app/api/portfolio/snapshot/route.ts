@@ -58,7 +58,7 @@ export async function GET(request: Request) {
             valueUsd: number | null;
           }> | null;
           priceUsd?: number | null;
-          priceSource?: "configured" | "coingecko" | "defillama" | "cache" | "missing";
+          priceSource?: "configured" | "coingecko" | "defillama" | "dexscreener" | "cache" | "missing";
           priceConfidence?: "high" | "medium" | "low";
           costBasisUsd?: number | null;
           realizedPnlUsd?: number | null;
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
           assetKey?: string;
           amount?: number | null;
           valueUsd?: number | null;
-          unitPriceSource?: "configured" | "coingecko" | "defillama" | "cache" | "missing";
+          unitPriceSource?: "configured" | "coingecko" | "defillama" | "dexscreener" | "cache" | "missing";
           unitPriceConfidence?: "high" | "medium" | "low";
         }>;
       }

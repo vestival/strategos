@@ -95,4 +95,41 @@ describe("price provider resilience", () => {
     expect(quotes.ALGO.source).toBe("defillama");
     expect(quotes.ALGO.confidence).toBe("medium");
   });
+
+  it("uses DexScreener fallback for unmapped/missing ASA prices (e.g. tALGO)", async () => {
+    process.env.PRICE_API_URL = "https://invalid-price-endpoint.example/prices";
+    process.env.DEFI_LLAMA_PRICE_API_URL = "https://custom-llama-endpoint.example/current";
+    process.env.DEXSCREENER_PRICE_API_URL = "https://api.dexscreener.com/latest/dex/search";
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(makeResponse({}, false))
+      .mockResolvedValueOnce(makeResponse({}, false))
+      .mockResolvedValueOnce(makeResponse({}, false))
+      .mockResolvedValueOnce(makeResponse({}, false))
+      .mockResolvedValueOnce(
+        makeResponse({
+          pairs: [
+            {
+              chainId: "algorand",
+              priceUsd: "0.095",
+              liquidity: { usd: 120000 },
+              baseToken: { address: "2537013734" },
+              quoteToken: { symbol: "ALGO" }
+            }
+          ]
+        })
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { getSpotPriceQuotes } = await import("@/lib/price/provider");
+    const quotes = await getSpotPriceQuotes([null, 2537013734]);
+    const calledUrls = fetchMock.mock.calls.map((args) => String(args[0]));
+
+    expect(quotes.ALGO.usd).toBeNull();
+    expect(calledUrls.some((url) => url.includes("dexscreener.com/latest/dex/search") && url.includes("q=2537013734"))).toBe(true);
+    expect(quotes["2537013734"].usd).toBe(0.095);
+    expect(quotes["2537013734"].source).toBe("dexscreener");
+    expect(quotes["2537013734"].confidence).toBe("medium");
+  });
 });

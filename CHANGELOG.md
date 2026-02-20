@@ -5,6 +5,7 @@ All notable changes to Strategos are documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- Tinyman/tALGO pricing model no longer forces `tALGO` to `ALGO` spot parity by default; spot quotes now include a DexScreener fallback for Algorand ASAs when CoinGecko/DefiLlama mapping is missing, improving tALGO/ALGO equivalence in DeFi valuation (`src/lib/price/provider.ts`, `src/lib/env.ts`, `tests/price-provider.test.ts`) (2026-02-20 14:10 MST)
 - Tinyman DeFi row metrics no longer use a synthetic `12%` at-deposit assumption; `At Deposit` is now computed from proportional cost basis of underlying tracked assets, and `Yield/PnL` are derived directly as `Now - At Deposit` for consistent portfolio math (`src/components/dashboard/dashboard-client.tsx`, `src/lib/defi/metrics.ts`, `tests/defi-metrics.test.ts`) (2026-02-20 13:18 MST)
 - Tinyman token breakdown now clarifies ALGO conversion by showing explicit per-token ratio (`ALGO/token`) under each token's ALGO-equivalent value (`src/components/dashboard/dashboard-client.tsx`, `locales/en.json`, `locales/es.json`) (2026-02-20 13:18 MST)
 - Stabilized FIFO `cost basis` against provider gaps by reusing historical prices cached in previous snapshots (`asset + UTC day`) during manual/cron recompute, preventing basis resets when a historical API response is temporarily missing (`src/lib/portfolio/price-fallback.ts`, `src/app/api/portfolio/refresh/route.ts`, `src/app/api/cron/daily-refresh/route.ts`, `src/app/api/portfolio/snapshot/route.ts`) (2026-02-20 06:20 MST)
@@ -64,6 +65,7 @@ All notable changes to Strategos are documented in this file.
 - Unit test coverage for wallet deletion ownership/404 rules via a dedicated deletion service (`tests/wallet-delete.test.ts`) (2026-02-17 04:46 MST)
 
 ### Changed
+- Tinyman DeFi details interaction is now row-click based (toggle on vault row) and no longer depends on a dedicated show/hide button, reducing UI clutter (`src/components/dashboard/dashboard-client.tsx`) (2026-02-20 14:10 MST)
 - Refined DeFi Tinyman row UX for readability: moved expand/collapse to explicit row button, reduced inline clutter in vault metadata, and rendered token breakdown as a structured subtable (`Token`, `Amount`, `USD`, `ALGO`) instead of compressed inline text (`src/components/dashboard/dashboard-client.tsx`, `locales/en.json`, `locales/es.json`) (2026-02-20 10:02 MST)
 - Generalized deployment/domain documentation to be environment-agnostic (replaced project-specific domain/email examples with placeholders like `<your-domain>`) across README and runbooks (`README.md`, `docs/DEPLOYMENT.md`, `docs/BRANDING.md`) (2026-02-20 09:45 MST)
 - Added explicit versioning policy and release commands to README, including realistic semver guidance and daily release cap behavior (2026-02-20 09:32 MST)
