@@ -15,6 +15,7 @@ import {
   alignSeriesByTimestamp,
   buildPerWalletAssetBalanceSeries,
   buildPerWalletValueSeries,
+  normalizeSeriesToUtcDailyClose,
   sumAlignedSeries,
   type WalletSeries
 } from "@/lib/portfolio/wallet-analytics";
@@ -434,10 +435,10 @@ export function DashboardClient() {
     snapshot?.computedAt
   ]);
 
-  const filteredWalletSeries = useMemo(
-    () => filterSeriesByRange(walletSeries, analyticsRange),
-    [walletSeries, analyticsRange]
-  );
+  const filteredWalletSeries = useMemo(() => {
+    const normalized = normalizeSeriesToUtcDailyClose(walletSeries);
+    return filterSeriesByRange(normalized, analyticsRange);
+  }, [walletSeries, analyticsRange]);
   const aggregateWalletSeries = useMemo(() => {
     const aligned = alignSeriesByTimestamp(filteredWalletSeries);
     return sumAlignedSeries(aligned);
@@ -971,12 +972,21 @@ export function DashboardClient() {
                 </div>
               </div>
 
-              <MultiSeriesHistoryChart
-                series={analyticsSeries}
-                privacyMode={privacyMode}
-                isUsd={analyticsMetric === "value"}
-                noDataLabel={m.dashboard.chart.noData}
-              />
+              {analyticsMode === "aggregate" && analyticsMetric === "value" ? (
+                <PortfolioHistoryChart
+                  points={analyticsSeries[0]?.points.map((point) => ({ ts: point.ts, valueUsd: point.value })) ?? []}
+                  privacyMode={privacyMode}
+                  unknownLabel={m.dashboard.footer.unknown}
+                  noDataLabel={m.dashboard.chart.noData}
+                />
+              ) : (
+                <MultiSeriesHistoryChart
+                  series={analyticsSeries}
+                  privacyMode={privacyMode}
+                  isUsd={analyticsMetric === "value"}
+                  noDataLabel={m.dashboard.chart.noData}
+                />
+              )}
 
               <div className="mt-3 grid gap-2 text-sm text-slate-600 dark:text-slate-300 md:grid-cols-3">
                 <div>
@@ -1011,7 +1021,7 @@ export function DashboardClient() {
                 <div className="font-medium text-slate-900 dark:text-slate-100">{m.dashboard.settings.theme}</div>
                 <div className="text-slate-500 dark:text-slate-400">{m.dashboard.settings.themeDesc}</div>
               </div>
-              <span className="rounded-md border border-[#334155] px-3 py-2 text-xs text-[#CBD5E1]">
+              <span className="rounded-md border border-slate-300 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300">
                 {m.dashboard.settings.darkOnly}
               </span>
             </div>
@@ -1102,14 +1112,10 @@ function filterHistoryByRange(points: Array<{ ts: string; valueUsd: number }>, r
 
 function filterSeriesByRange(series: WalletSeries[], range: HistoryRange): WalletSeries[] {
   if (range === "max") return series;
-  const allTs = series.flatMap((item) => item.points.map((point) => Date.parse(point.ts))).filter((value) => Number.isFinite(value));
-  if (allTs.length === 0) return series;
-  const end = Math.max(...allTs);
   const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
-  const start = end - days * 24 * 60 * 60 * 1000;
 
   return series.map((item) => {
-    const points = item.points.filter((point) => Date.parse(point.ts) >= start);
+    const points = item.points.slice(-Math.min(item.points.length, days));
     return { ...item, points: points.length > 1 ? points : item.points.slice(-Math.min(2, item.points.length)) };
   });
 }

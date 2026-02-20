@@ -49,7 +49,7 @@ export function UserMenu() {
         onClick={() => setOpen((prev) => !prev)}
         type="button"
       >
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white">
+        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
           {label.slice(0, 1).toUpperCase()}
         </span>
         <span className="max-w-[120px] truncate">{label}</span>

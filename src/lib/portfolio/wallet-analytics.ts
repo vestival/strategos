@@ -45,6 +45,36 @@ function appendLatestPoint(points: SeriesPoint[], latestTs: string | null, lates
   return [...points, { ts: new Date(parsed).toISOString(), value: latestValue }];
 }
 
+function utcDayKey(isoTs: string): string | null {
+  const parsed = Date.parse(isoTs);
+  if (!Number.isFinite(parsed)) return null;
+  return new Date(parsed).toISOString().slice(0, 10);
+}
+
+export function normalizeSeriesToUtcDailyClose(series: WalletSeries[]): WalletSeries[] {
+  return series.map((item) => {
+    if (item.points.length <= 1) {
+      return item;
+    }
+
+    const byDay = new Map<string, SeriesPoint>();
+    for (const point of item.points) {
+      const day = utcDayKey(point.ts);
+      if (!day) continue;
+      const existing = byDay.get(day);
+      if (!existing || Date.parse(point.ts) >= Date.parse(existing.ts)) {
+        byDay.set(day, point);
+      }
+    }
+
+    const normalized = Array.from(byDay.values()).sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+    return {
+      ...item,
+      points: normalized.length ? normalized : item.points
+    };
+  });
+}
+
 export function buildPerWalletValueSeries({
   transactions,
   wallets,

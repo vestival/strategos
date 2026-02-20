@@ -4,6 +4,7 @@ import {
   alignSeriesByTimestamp,
   buildPerWalletAssetBalanceSeries,
   buildPerWalletValueSeries,
+  normalizeSeriesToUtcDailyClose,
   sumAlignedSeries
 } from "@/lib/portfolio/wallet-analytics";
 
@@ -71,5 +72,24 @@ describe("wallet analytics series", () => {
     });
 
     expect(perWallet[0]?.points.at(-1)?.value).toBeCloseTo(0.999);
+  });
+
+  it("normalizes series to UTC daily close points", () => {
+    const normalized = normalizeSeriesToUtcDailyClose([
+      {
+        key: "W1",
+        label: "W1",
+        points: [
+          { ts: "2026-02-18T01:00:00.000Z", value: 10 },
+          { ts: "2026-02-18T22:00:00.000Z", value: 15 },
+          { ts: "2026-02-19T02:00:00.000Z", value: 8 }
+        ]
+      }
+    ]);
+
+    expect(normalized[0]?.points).toEqual([
+      { ts: "2026-02-18T22:00:00.000Z", value: 15 },
+      { ts: "2026-02-19T02:00:00.000Z", value: 8 }
+    ]);
   });
 });
