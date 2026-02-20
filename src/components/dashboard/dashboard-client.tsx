@@ -608,12 +608,7 @@ export function DashboardClient() {
                         {asset.priceUsd === null ? (
                           m.dashboard.overview.noPrice
                         ) : (
-                          <div>
-                            <div>{maskUsd(asset.priceUsd)}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                              {formatPriceMeta(asset.priceSource, asset.priceConfidence)}
-                            </div>
-                          </div>
+                          <div>{maskUsd(asset.priceUsd)}</div>
                         )}
                       </td>
                       <td className="px-4 py-3">{maskUsd(asset.valueUsd)}</td>
@@ -746,10 +741,13 @@ export function DashboardClient() {
                         </td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskNumber(tx.amount)}</td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                          {maskUsdPrecise(tx.unitPriceUsd)}
-                          <div className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                            {tx.valueSource === "spot" && tx.amount > 0 ? `${m.dashboard.transactions.estimated} · ` : ""}
-                            {formatPriceMeta(tx.unitPriceSource, tx.unitPriceConfidence)}
+                          <div>
+                            {maskUsdPrecise(tx.unitPriceUsd)}{" "}
+                            {tx.valueSource === "spot" && tx.amount > 0 ? (
+                              <span className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                {m.dashboard.transactions.estimated}
+                              </span>
+                            ) : null}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{maskUsd(tx.valueUsd)}</td>
@@ -1070,13 +1068,6 @@ function formatTransactionTime(unixTs: number, unknownLabel: string): string {
     return unknownLabel;
   }
   return new Date(unixTs * 1000).toLocaleString();
-}
-
-function formatPriceMeta(source?: PriceSource, confidence?: PriceConfidence) {
-  const normalizedSource = source ?? "missing";
-  const normalizedConfidence = confidence ?? "low";
-  const confidenceLabel = normalizedConfidence === "high" ? "H" : normalizedConfidence === "medium" ? "M" : "L";
-  return `${normalizedSource} · ${confidenceLabel}`;
 }
 
 function filterHistoryByRange(points: Array<{ ts: string; valueUsd: number }>, range: HistoryRange) {

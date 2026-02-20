@@ -2,6 +2,8 @@
 
 **Strategos | Architect of Capital**
 
+> **Important:** Strategos is currently focused *exclusively* on Algorand wallets, Algorand assets (ALGO and ASAs), and Algorand DeFi protocols.
+
 Portfolio intelligence platform for disciplined investors with Google login, multi-wallet linking, FIFO cost basis, transaction analytics, and DeFi estimates.
 
 ## What it does

@@ -286,52 +286,100 @@ export async function getHistoricalPricesUsdByDay(
     return out;
   }
 
-  const tasks: Array<{ assetKey: string; day: string; coinId: string }> = [];
-
-  for (const assetKey of Array.from(new Set(assetKeys))) {
+  const uniqueAssetKeys = Array.from(new Set(assetKeys));
+  const coinIdToAssetKeys = new Map<string, string[]>();
+  for (const assetKey of uniqueAssetKeys) {
     const coinId = getCoinGeckoIdForAssetKey(assetKey);
-    if (!coinId) {
-      continue;
+    if (!coinId) continue;
+    const list = coinIdToAssetKeys.get(coinId) ?? [];
+    list.push(assetKey);
+    coinIdToAssetKeys.set(coinId, list);
+  }
+
+  const sortedTimestamps = Array.from(new Set(unixTimestamps.filter((ts) => Number.isFinite(ts) && ts > 0))).sort((a, b) => a - b);
+  const fromUnix = sortedTimestamps[0];
+  const toUnix = sortedTimestamps[sortedTimestamps.length - 1];
+
+  for (const [coinId, mappedAssetKeys] of coinIdToAssetKeys.entries()) {
+    const unresolvedDays = days.filter((day) => !historicalCache.has(`${coinId}:${day}`));
+
+    if (unresolvedDays.length > 0) {
+      const rangePricesByDay = await fetchHistoricalRangeByDay(base, coinId, fromUnix, toUnix);
+      for (const day of unresolvedDays) {
+        const cacheKey = `${coinId}:${day}`;
+        if (rangePricesByDay.has(day)) {
+          historicalCache.set(cacheKey, rangePricesByDay.get(day) ?? null);
+          continue;
+        }
+
+        const fallback = await fetchHistoricalPriceForDay(base, coinId, day);
+        historicalCache.set(cacheKey, fallback);
+      }
     }
-    for (const day of days) {
-      tasks.push({ assetKey, day, coinId });
+
+    for (const assetKey of mappedAssetKeys) {
+      for (const day of days) {
+        const cacheKey = `${coinId}:${day}`;
+        out[`${assetKey}:${day}`] = historicalCache.get(cacheKey) ?? null;
+      }
     }
   }
 
-  await Promise.all(
-    tasks.map(async (task) => {
-      const cacheKey = `${task.coinId}:${task.day}`;
-      let usd: number | null;
+  return out;
+}
 
-      if (historicalCache.has(cacheKey)) {
-        usd = historicalCache.get(cacheKey) ?? null;
-      } else {
-        const url = new URL(`${base}/coins/${task.coinId}/history`);
-        url.searchParams.set("date", task.day);
-        url.searchParams.set("localization", "false");
+async function fetchHistoricalRangeByDay(base: string, coinId: string, fromUnix: number, toUnix: number): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (!Number.isFinite(fromUnix) || !Number.isFinite(toUnix) || fromUnix <= 0 || toUnix <= 0 || toUnix < fromUnix) {
+    return out;
+  }
 
-        try {
-          const response = await fetch(url.toString(), { next: { revalidate: 0 } });
-          if (!response.ok) {
-            usd = null;
-          } else {
-            const data = (await response.json()) as {
-              market_data?: { current_price?: { usd?: number } };
-            };
-            usd = data.market_data?.current_price?.usd ?? null;
-          }
-        } catch {
-          usd = null;
-        }
+  const from = Math.floor(fromUnix - 12 * 60 * 60);
+  const to = Math.floor(toUnix + 36 * 60 * 60);
 
-        historicalCache.set(cacheKey, usd);
-      }
+  try {
+    const url = new URL(`${base}/coins/${coinId}/market_chart/range`);
+    url.searchParams.set("vs_currency", "usd");
+    url.searchParams.set("from", String(from));
+    url.searchParams.set("to", String(to));
 
-      out[`${task.assetKey}:${task.day}`] = usd;
-    })
-  );
+    const response = await fetch(url.toString(), { next: { revalidate: 0 } });
+    if (!response.ok) {
+      return out;
+    }
+
+    const data = (await response.json()) as { prices?: Array<[number, number]> };
+    for (const row of data.prices ?? []) {
+      if (!Array.isArray(row) || row.length < 2) continue;
+      const [msTs, price] = row;
+      if (!Number.isFinite(msTs) || !Number.isFinite(price) || price < 0) continue;
+      const dayKey = formatUtcDay(Math.floor(msTs / 1000));
+      out.set(dayKey, price);
+    }
+  } catch {
+    return out;
+  }
 
   return out;
+}
+
+async function fetchHistoricalPriceForDay(base: string, coinId: string, day: string): Promise<number | null> {
+  try {
+    const url = new URL(`${base}/coins/${coinId}/history`);
+    url.searchParams.set("date", day);
+    url.searchParams.set("localization", "false");
+
+    const response = await fetch(url.toString(), { next: { revalidate: 0 } });
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as { market_data?: { current_price?: { usd?: number } } };
+    const usd = data.market_data?.current_price?.usd;
+    return typeof usd === "number" && Number.isFinite(usd) && usd >= 0 ? usd : null;
+  } catch {
+    return null;
+  }
 }
 
 export function getHistoricalPriceKey(assetKey: string, unixTs: number): string {

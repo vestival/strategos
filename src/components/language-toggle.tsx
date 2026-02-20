@@ -10,14 +10,22 @@ export function LanguageToggle({ compact = false }: { compact?: boolean }) {
       {!compact && <span className="text-xs text-slate-500 dark:text-slate-400">{m.common.language}</span>}
       <div className="inline-flex overflow-hidden rounded-md border border-slate-300 dark:border-slate-700">
         <button
-          className={`px-2 py-1 text-xs ${locale === "en" ? "bg-brand-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300"}`}
+          className={`px-2 py-1 text-xs font-medium ${
+            locale === "en"
+              ? "bg-brand-700 text-white"
+              : "bg-white text-slate-700 hover:bg-slate-100 dark:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800"
+          }`}
           onClick={() => setLocale("en")}
           type="button"
         >
           EN
         </button>
         <button
-          className={`px-2 py-1 text-xs ${locale === "es" ? "bg-brand-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300"}`}
+          className={`px-2 py-1 text-xs font-medium ${
+            locale === "es"
+              ? "bg-brand-700 text-white"
+              : "bg-white text-slate-700 hover:bg-slate-100 dark:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800"
+          }`}
           onClick={() => setLocale("es")}
           type="button"
         >

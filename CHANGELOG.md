@@ -5,6 +5,7 @@ All notable changes to Strategos are documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added Strategos favicon asset (`/icon.svg`) with brand-aligned dark background and white "S" monogram for browser tabs/bookmarks (2026-02-19 17:01 MST)
 - Wallet bundles (saved local scopes) in dashboard to analyze portfolio, transactions, DeFi rows, and historical chart by selected wallet groups without changing linked-wallet data (2026-02-19 14:58 MST)
 - Price provenance metadata across assets/transactions (`source` + confidence), surfaced in UI for transparency on CoinGecko/DefiLlama/cache fallbacks (2026-02-19 14:58 MST)
 - Vercel Web Analytics integration via `@vercel/analytics` and global `<Analytics />` in app layout for production traffic/page-view observability (2026-02-19 14:45 MST)
@@ -40,6 +41,9 @@ All notable changes to Strategos are documented in this file.
 - Unit test coverage for wallet deletion ownership/404 rules via a dedicated deletion service (`tests/wallet-delete.test.ts`) (2026-02-17 04:46 MST)
 
 ### Changed
+- README opening section now states explicitly that Strategos is currently focused exclusively on Algorand wallets/assets/protocols (2026-02-19 17:01 MST)
+- Language toggle contrast improved in light mode so active/inactive `EN/ES` labels remain clearly readable (2026-02-19 17:01 MST)
+- Removed cryptic price-source confidence shorthand from asset/transaction tables (e.g. `configured · H`) to reduce UI ambiguity (2026-02-19 17:01 MST)
 - Simplified dashboard `Scope` UX: removed bundle controls (`Save current as bundle` / `Delete bundle`) and replaced scope selector options with only `All wallets` + each linked wallet address, so scope behavior is explicit and not confusing (2026-02-19 16:43 MST)
 - Overview portfolio chart now reads from `/api/portfolio/history` (daily portfolio valuation) instead of deriving directly from transaction rows in the client, so chart evolution reflects daily portfolio value (price-by-day) under current wallet scope (2026-02-19 16:33 MST)
 - Restored dual theme behavior (light/dark) by removing forced dark theme in `ThemeProvider`, enabling runtime theme switching, and updating dashboard/header controls and key pages (`landing`, `wallets`, `legal`, user menu, language toggle) to render correctly in both themes (2026-02-19 16:14 MST)
@@ -54,6 +58,7 @@ All notable changes to Strategos are documented in this file.
 - Corrected per-wallet FIFO attribution to include inbound acquisition lots (receiver-side events), fixing wallet-level cost basis/PnL accuracy (2026-02-17 04:36 MST)
 
 ### Fixed
+- Historical chart pricing input is now fetched per-coin using CoinGecko `market_chart/range` (with per-day fallback) instead of many per-day requests, reducing missing-day plateaus/flatlines caused by partial historical fetch failures (2026-02-19 17:01 MST)
 - `/api/portfolio/history` now supports wallet scoping (`?wallet=` params) and computes latest value/asset balances for the selected wallets only, preventing mismatches between selected scope and displayed history (2026-02-19 16:33 MST)
 - Historical price fetch no longer depends on `PRICE_API_URL` being CoinGecko; daily historical pricing now always uses CoinGecko API base fallback, restoring historical valuation/cost-basis inputs when another spot provider is configured (2026-02-19 16:33 MST)
 - FIFO acquisition pricing now uses nearest available historical day price when exact tx-day price is missing, reducing zero-cost lots (e.g., TALGO) that caused distorted cost basis/unrealized PnL (2026-02-19 16:33 MST)
