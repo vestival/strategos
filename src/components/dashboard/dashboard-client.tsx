@@ -910,20 +910,23 @@ export function DashboardClient() {
                 <tbody>
                   {filteredDefiRows.map((row) => (
                     <Fragment key={row.id}>
-                      <tr
-                        className="cursor-pointer border-t border-slate-200 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/30"
-                        onClick={() => setExpandedDefiRowId((current) => (current === row.id ? null : row.id))}
-                      >
+                      <tr className="border-t border-slate-200 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/30">
                         <td className="px-4 py-3">
-                          <div className="font-medium text-slate-900 dark:text-slate-100">
-                            {row.protocol} {m.dashboard.defi.vaultSuffix}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="font-medium text-slate-900 dark:text-slate-100">
+                              {row.protocol} {m.dashboard.defi.vaultSuffix}
+                            </div>
+                            <button
+                              className="rounded-md border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                              onClick={() => setExpandedDefiRowId((current) => (current === row.id ? null : row.id))}
+                              type="button"
+                            >
+                              {expandedDefiRowId === row.id ? m.dashboard.defi.hideDetails : m.dashboard.defi.viewDetails}
+                            </button>
                           </div>
                           <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                             <span className="rounded bg-slate-100 px-2 py-0.5 uppercase dark:bg-slate-800">{row.positionType}</span>
                             {row.estimated && <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">{m.dashboard.defi.estimated}</span>}
-                            <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                              {expandedDefiRowId === row.id ? m.dashboard.defi.hideDetails : m.dashboard.defi.viewDetails}
-                            </span>
                           </div>
                           <div className="mt-1 text-xs text-slate-400 dark:text-slate-500">{shortAddress(row.wallet)}</div>
                         </td>
@@ -942,28 +945,32 @@ export function DashboardClient() {
                           <td className="px-4 py-3" colSpan={7}>
                             <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{m.dashboard.defi.tokenBreakdown}</div>
                             {row.detailTokens.length > 0 ? (
-                              <div className="space-y-1 text-sm text-slate-700 dark:text-slate-200">
-                                {row.detailTokens.map((token) => (
-                                  <div className="flex flex-wrap items-center justify-between gap-2" key={token.key}>
-                                    <div>
-                                      <span className="font-medium">{token.label}</span>
-                                      {token.assetId ? (
-                                        <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">ASA {token.assetId}</span>
-                                      ) : null}
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
-                                      <span>
-                                        {m.dashboard.defi.amount}: {maskNumber(token.amount)}
-                                      </span>
-                                      <span>
-                                        USD: {maskUsd(token.valueUsd)}
-                                      </span>
-                                      <span>
-                                        ALGO: {maskAlgo(token.valueAlgo)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ))}
+                              <div className="overflow-x-auto rounded-md border border-slate-200 dark:border-slate-700">
+                                <table className="w-full text-left text-xs sm:text-sm">
+                                  <thead className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                    <tr>
+                                      <th className="px-3 py-2">{m.dashboard.defi.token}</th>
+                                      <th className="px-3 py-2">{m.dashboard.defi.amount}</th>
+                                      <th className="px-3 py-2">USD</th>
+                                      <th className="px-3 py-2">ALGO</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {row.detailTokens.map((token) => (
+                                      <tr className="border-t border-slate-200 dark:border-slate-800" key={token.key}>
+                                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
+                                          <span className="font-medium">{token.label}</span>
+                                          {token.assetId ? (
+                                            <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">ASA {token.assetId}</span>
+                                          ) : null}
+                                        </td>
+                                        <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{maskNumber(token.amount)}</td>
+                                        <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{maskUsd(token.valueUsd)}</td>
+                                        <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{maskAlgo(token.valueAlgo)}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
                             ) : (
                               <div className="text-sm text-slate-500 dark:text-slate-400">{m.dashboard.defi.noTokenDetails}</div>

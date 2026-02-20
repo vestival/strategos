@@ -62,6 +62,7 @@ All notable changes to Strategos are documented in this file.
 - Unit test coverage for wallet deletion ownership/404 rules via a dedicated deletion service (`tests/wallet-delete.test.ts`) (2026-02-17 04:46 MST)
 
 ### Changed
+- Refined DeFi Tinyman row UX for readability: moved expand/collapse to explicit row button, reduced inline clutter in vault metadata, and rendered token breakdown as a structured subtable (`Token`, `Amount`, `USD`, `ALGO`) instead of compressed inline text (`src/components/dashboard/dashboard-client.tsx`, `locales/en.json`, `locales/es.json`) (2026-02-20 10:02 MST)
 - Generalized deployment/domain documentation to be environment-agnostic (replaced project-specific domain/email examples with placeholders like `<your-domain>`) across README and runbooks (`README.md`, `docs/DEPLOYMENT.md`, `docs/BRANDING.md`) (2026-02-20 09:45 MST)
 - Added explicit versioning policy and release commands to README, including realistic semver guidance and daily release cap behavior (2026-02-20 09:32 MST)
 - README opening section now states explicitly that Strategos is currently focused exclusively on Algorand wallets/assets/protocols (2026-02-19 17:01 MST)

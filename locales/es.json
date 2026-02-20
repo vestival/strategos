@@ -134,6 +134,7 @@
       "viewDetails": "ver detalle de tokens",
       "hideDetails": "ocultar detalle de tokens",
       "tokenBreakdown": "Desglose de tokens",
+      "token": "Token",
       "amount": "Cantidad",
       "noTokenDetails": "Aun no hay detalle por token disponible para esta posicion.",
       "unknownAsset": "Activo desconocido",
