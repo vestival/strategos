@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getEnv } from "@/lib/env";
+import { chooseBestDailyPrices } from "@/lib/portfolio/daily-price-coverage";
 import { mapLatestAssetStatesFromSnapshotAssets } from "@/lib/portfolio/history-mapper";
 import { buildPortfolioHistoryFromTransactions } from "@/lib/portfolio/history";
 import { getHistoricalPriceKey, getHistoricalPricesUsdByDay } from "@/lib/price/provider";
@@ -118,20 +119,25 @@ export async function GET(request: Request) {
     scopedAssets
   });
 
+  const freshDailyPrices = await buildDailyPriceRows({
+    assets: scopedAssets,
+    transactions: scopedTransactions.map((tx) => ({
+      ts: tx.ts,
+      assetKey: tx.assetKey
+    })),
+    latestTs: snapshot?.computedAt ?? null
+  });
+
+  const dailyPrices = chooseBestDailyPrices({
+    stored: scopedDailyPrices,
+    fresh: freshDailyPrices,
+    scopedAssets
+  });
+
   const history = buildPortfolioHistoryFromTransactions({
     transactions: scopedTransactions,
     latestAssetStates: mapLatestAssetStatesFromSnapshotAssets(scopedAssets),
-    dailyPrices:
-      scopedDailyPrices.length > 0
-        ? scopedDailyPrices
-        : await buildDailyPriceRows({
-            assets: scopedAssets,
-            transactions: scopedTransactions.map((tx) => ({
-              ts: tx.ts,
-              assetKey: tx.assetKey
-            })),
-            latestTs: snapshot?.computedAt ?? null
-          }),
+    dailyPrices,
     latestValueUsd,
     latestTs: snapshot?.computedAt ?? null
   });

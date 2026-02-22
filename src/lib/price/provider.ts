@@ -408,19 +408,27 @@ export async function getHistoricalPricesUsdByDay(
   const toUnix = sortedTimestamps[sortedTimestamps.length - 1];
 
   for (const [coinId, mappedAssetKeys] of coinIdToAssetKeys.entries()) {
-    const unresolvedDays = days.filter((day) => !historicalCache.has(`${coinId}:${day}`));
+    const unresolvedDays = days.filter((day) => {
+      const key = `${coinId}:${day}`;
+      return !historicalCache.has(key);
+    });
 
     if (unresolvedDays.length > 0) {
       const rangePricesByDay = await fetchHistoricalRangeByDay(base, coinId, fromUnix, toUnix);
       for (const day of unresolvedDays) {
         const cacheKey = `${coinId}:${day}`;
         if (rangePricesByDay.has(day)) {
-          historicalCache.set(cacheKey, rangePricesByDay.get(day) ?? null);
+          const value = rangePricesByDay.get(day);
+          if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+            historicalCache.set(cacheKey, value);
+          }
           continue;
         }
 
         const fallback = await fetchHistoricalPriceForDay(base, coinId, day);
-        historicalCache.set(cacheKey, fallback);
+        if (typeof fallback === "number" && Number.isFinite(fallback) && fallback >= 0) {
+          historicalCache.set(cacheKey, fallback);
+        }
       }
     }
 

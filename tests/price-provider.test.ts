@@ -132,4 +132,26 @@ describe("price provider resilience", () => {
     expect(quotes["2537013734"].source).toBe("dexscreener");
     expect(quotes["2537013734"].confidence).toBe("medium");
   });
+
+  it("retries historical day fetch when a previous attempt returned null", async () => {
+    process.env.PRICE_API_URL = "https://api.coingecko.com/api/v3/simple/price";
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(makeResponse({ prices: [] })) // range attempt #1
+      .mockResolvedValueOnce(makeResponse({ market_data: { current_price: {} } })) // day fallback #1 => null
+      .mockResolvedValueOnce(makeResponse({ prices: [] })) // range attempt #2
+      .mockResolvedValueOnce(makeResponse({ market_data: { current_price: { usd: 0.25 } } })); // day fallback #2
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { getHistoricalPricesUsdByDay, getHistoricalPriceKey } = await import("@/lib/price/provider");
+    const ts = 1767225600; // 2026-01-01 00:00:00 UTC
+
+    const first = await getHistoricalPricesUsdByDay(["ALGO"], [ts]);
+    const second = await getHistoricalPricesUsdByDay(["ALGO"], [ts]);
+    const key = getHistoricalPriceKey("ALGO", ts);
+
+    expect(first[key]).toBeNull();
+    expect(second[key]).toBe(0.25);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
 });
