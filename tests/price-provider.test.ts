@@ -100,15 +100,12 @@ describe("price provider resilience", () => {
     process.env.PRICE_API_URL = "https://invalid-price-endpoint.example/prices";
     process.env.DEFI_LLAMA_PRICE_API_URL = "https://custom-llama-endpoint.example/current";
     process.env.DEXSCREENER_PRICE_API_URL = "https://api.dexscreener.com/latest/dex/search";
+    process.env.ASA_PRICE_MAP_JSON = "{}";
 
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(makeResponse({}, false))
-      .mockResolvedValueOnce(makeResponse({}, false))
-      .mockResolvedValueOnce(makeResponse({}, false))
-      .mockResolvedValueOnce(makeResponse({}, false))
-      .mockResolvedValueOnce(
-        makeResponse({
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("dexscreener.com/latest/dex/search") && url.includes("q=2537013734")) {
+        return makeResponse({
           pairs: [
             {
               chainId: "algorand",
@@ -118,8 +115,11 @@ describe("price provider resilience", () => {
               quoteToken: { symbol: "ALGO" }
             }
           ]
-        })
-      );
+        });
+      }
+
+      return makeResponse({}, false);
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     const { getSpotPriceQuotes } = await import("@/lib/price/provider");
@@ -131,6 +131,72 @@ describe("price provider resilience", () => {
     expect(quotes["2537013734"].usd).toBe(0.095);
     expect(quotes["2537013734"].source).toBe("dexscreener");
     expect(quotes["2537013734"].confidence).toBe("medium");
+  });
+
+  it("uses CoinGecko token-price fallback for unmapped ASA ids (e.g. X-NFT)", async () => {
+    process.env.PRICE_API_URL = "https://invalid-price-endpoint.example/prices";
+    process.env.DEFI_LLAMA_PRICE_API_URL = "https://custom-llama-endpoint.example/current";
+    process.env.DEXSCREENER_PRICE_API_URL = "https://api.dexscreener.com/latest/dex/search";
+    process.env.ASA_PRICE_MAP_JSON = "{}";
+
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("/simple/token_price/algorand") && url.includes("contract_addresses=1164556102")) {
+        return makeResponse({
+          "1164556102": {
+            usd: 0.6177
+          }
+        });
+      }
+      return makeResponse({}, false);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { getSpotPriceQuotes } = await import("@/lib/price/provider");
+    const quotes = await getSpotPriceQuotes([1164556102]);
+    const tokenCalls = fetchMock.mock.calls.filter((call) => String(call[0]).includes("/simple/token_price/algorand"));
+
+    expect(tokenCalls.length).toBeGreaterThanOrEqual(1);
+    expect(String(tokenCalls[0]?.[0])).toContain("/simple/token_price/algorand");
+    expect(quotes["1164556102"].usd).toBe(0.6177);
+    expect(["configured", "coingecko"]).toContain(quotes["1164556102"].source);
+    expect(quotes["1164556102"].confidence).toBe("high");
+  });
+
+  it("falls back to DexScreener when token-price endpoint has no quote", async () => {
+    process.env.PRICE_API_URL = "https://invalid-price-endpoint.example/prices";
+    process.env.DEFI_LLAMA_PRICE_API_URL = "https://custom-llama-endpoint.example/current";
+    process.env.DEXSCREENER_PRICE_API_URL = "https://api.dexscreener.com/latest/dex/search";
+    process.env.ASA_PRICE_MAP_JSON = "{}";
+
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("/simple/token_price/algorand")) {
+        return makeResponse({}, true);
+      }
+      if (url.includes("dexscreener.com/latest/dex/search") && url.includes("q=1164556102")) {
+        return makeResponse({
+          pairs: [
+            {
+              chainId: "algorand",
+              priceUsd: "0.618",
+              liquidity: { usd: 10000 },
+              baseToken: { address: "1164556102" },
+              quoteToken: { symbol: "ALGO" }
+            }
+          ]
+        });
+      }
+      return makeResponse({}, false);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { getSpotPriceQuotes } = await import("@/lib/price/provider");
+    const quotes = await getSpotPriceQuotes([1164556102]);
+
+    expect(quotes["1164556102"].usd).toBe(0.618);
+    expect(quotes["1164556102"].source).toBe("dexscreener");
+    expect(quotes["1164556102"].confidence).toBe("medium");
   });
 
   it("retries historical day fetch when a previous attempt returned null", async () => {

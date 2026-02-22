@@ -112,6 +112,7 @@ export function DashboardClient() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
   const [hideZeroBalances, setHideZeroBalances] = useState<boolean>(true);
+  const [hideNoPriceTokens, setHideNoPriceTokens] = useState<boolean>(false);
   const [expandedAssetKey, setExpandedAssetKey] = useState<string | null>(null);
   const [privacyMode, setPrivacyMode] = useState<boolean>(false);
   const [txDirectionFilter, setTxDirectionFilter] = useState<"all" | "in" | "out" | "self">("all");
@@ -323,7 +324,15 @@ export function DashboardClient() {
     historyStartValue === null || historyEndValue === null || historyStartValue === 0
       ? null
       : ((historyEndValue - historyStartValue) / historyStartValue) * 100;
-  const visibleAssets = scopedAssets.filter((asset) => !hideZeroBalances || Math.abs(asset.balance) > 0);
+  const visibleAssets = scopedAssets.filter((asset) => {
+    if (hideZeroBalances && Math.abs(asset.balance) <= 0) {
+      return false;
+    }
+    if (hideNoPriceTokens && !asset.hasPrice) {
+      return false;
+    }
+    return true;
+  });
   const filteredTransactions = scopedTransactions.filter((tx) => {
     if (txDirectionFilter !== "all" && tx.direction !== txDirectionFilter) return false;
     if (txTypeFilter !== "all" && tx.txType !== txTypeFilter) return false;
@@ -683,17 +692,17 @@ export function DashboardClient() {
         )}
 
         {activeTab === "overview" && (
-          <div className="mb-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-            <input
-              id="hide-zero-balances"
-              type="checkbox"
+          <div className="mb-3 flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
+            <FilterSwitch
               checked={hideZeroBalances}
-              onChange={(e) => setHideZeroBalances(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 bg-white text-brand-500 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-900"
+              label={m.dashboard.overview.hideZero}
+              onChange={setHideZeroBalances}
             />
-            <label htmlFor="hide-zero-balances" className="cursor-pointer">
-              {m.dashboard.overview.hideZero}
-            </label>
+            <FilterSwitch
+              checked={hideNoPriceTokens}
+              label={m.dashboard.overview.hideNoPrice}
+              onChange={setHideNoPriceTokens}
+            />
           </div>
         )}
 
@@ -1243,6 +1252,39 @@ function Card({ label, value, helpText }: { label: string; value: string; helpTe
       </div>
       <div className="mt-1 text-xl font-semibold">{value}</div>
     </div>
+  );
+}
+
+function FilterSwitch({
+  checked,
+  label,
+  onChange
+}: {
+  checked: boolean;
+  label: string;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <button
+      aria-checked={checked}
+      className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      onClick={() => onChange(!checked)}
+      role="switch"
+      type="button"
+    >
+      <span
+        className={`relative inline-flex h-5 w-9 items-center rounded-full transition ${
+          checked ? "bg-brand-600" : "bg-slate-300 dark:bg-slate-700"
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+            checked ? "translate-x-4" : "translate-x-0.5"
+          }`}
+        />
+      </span>
+      <span>{label}</span>
+    </button>
   );
 }
 

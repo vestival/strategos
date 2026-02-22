@@ -64,6 +64,7 @@
     },
     "overview": {
       "hideZero": "Hide 0 balance tokens",
+      "hideNoPrice": "Hide no-price tokens",
       "heldByWallets": "Held by wallets",
       "noWalletBreakdown": "No wallet-level balance details for this asset.",
       "headers": {

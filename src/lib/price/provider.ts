@@ -5,6 +5,7 @@ const env = getEnv();
 const ALGO_CG_ID = "algorand";
 const DEFAULT_CG_SIMPLE_PRICE_URL = "https://api.coingecko.com/api/v3/simple/price";
 const DEFAULT_CG_API_BASE = "https://api.coingecko.com/api/v3";
+const DEFAULT_CG_TOKEN_PRICE_URL = "https://api.coingecko.com/api/v3/simple/token_price/algorand";
 const DEFAULT_LLAMA_PRICE_URL = "https://coins.llama.fi/prices/current";
 const DEFAULT_DEXSCREENER_PRICE_URL = "https://api.dexscreener.com/latest/dex/search";
 const DEFAULT_ASA_CG_MAP: Record<number, string> = {
@@ -106,6 +107,38 @@ async function fetchSpotPriceMap(endpoint: string, coinIds: string[]): Promise<P
         out[coinId] = { usd };
       }
     }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+async function fetchCoinGeckoTokenPriceMap(endpoint: string, assetIds: number[]): Promise<Record<number, number>> {
+  if (assetIds.length === 0) {
+    return {};
+  }
+
+  try {
+    const url = new URL(endpoint);
+    url.searchParams.set("contract_addresses", assetIds.join(","));
+    url.searchParams.set("vs_currencies", "usd");
+
+    const response = await fetch(url.toString(), { next: { revalidate: 0 } });
+    if (!response.ok) {
+      return {};
+    }
+
+    const data = (await response.json()) as Record<string, { usd?: unknown }>;
+    const out: Record<number, number> = {};
+
+    for (const assetId of assetIds) {
+      const key = String(assetId);
+      const usd = data[key]?.usd;
+      if (typeof usd === "number" && Number.isFinite(usd) && usd >= 0) {
+        out[assetId] = usd;
+      }
+    }
+
     return out;
   } catch {
     return {};
@@ -226,6 +259,10 @@ function sourceFromCoinIdEndpoint(coinId: string, endpoint: string): SpotPriceSo
 
 export async function getSpotPriceQuotes(assetIds: Array<number | null>): Promise<Record<string, SpotPriceQuote>> {
   const unique = Array.from(new Set(assetIds.map((id) => (id === null ? "ALGO" : String(id)))));
+  const uniqueAsaIds = unique
+    .filter((key) => key !== "ALGO")
+    .map((key) => Number(key))
+    .filter((assetId) => Number.isInteger(assetId));
 
   const idsToQuery = new Set<string>();
   if (unique.includes("ALGO")) {
@@ -243,6 +280,7 @@ export async function getSpotPriceQuotes(assetIds: Array<number | null>): Promis
   const requestedCoinIds = Array.from(idsToQuery);
   let prices: PriceMap = {};
   const dexPricesByAssetId = new Map<number, number>();
+  const tokenPricesByAssetId = new Map<number, { usd: number; source: SpotPriceSource }>();
   const sourceByCoinId: Record<string, SpotPriceSource> = {};
   if (idsToQuery.size > 0) {
     const endpoints = Array.from(new Set([env.PRICE_API_URL, DEFAULT_CG_SIMPLE_PRICE_URL]));
@@ -285,34 +323,6 @@ export async function getSpotPriceQuotes(assetIds: Array<number | null>): Promis
       }
     }
 
-    const missingAsaIds = unique
-      .filter((key) => key !== "ALGO")
-      .map((key) => Number(key))
-      .filter((assetId) => Number.isInteger(assetId))
-      .filter((assetId) => {
-        const cgId = asaMap[assetId];
-        if (cgId && typeof prices[cgId]?.usd === "number") {
-          return false;
-        }
-        return true;
-      });
-
-    const dexEndpoint = env.DEXSCREENER_PRICE_API_URL ?? DEFAULT_DEXSCREENER_PRICE_URL;
-    if (missingAsaIds.length > 0) {
-      await Promise.all(
-        missingAsaIds.map(async (assetId) => {
-          const price = await fetchDexScreenerPriceUsd(assetId, dexEndpoint);
-          if (price !== null) {
-            dexPricesByAssetId.set(assetId, price);
-            spotCache.set(`dex:${assetId}`, {
-              usd: price,
-              asOf: Date.now()
-            });
-          }
-        })
-      );
-    }
-
     for (const [coinId, entry] of Object.entries(prices)) {
       if (typeof entry.usd === "number" && Number.isFinite(entry.usd)) {
         spotCache.set(coinId, {
@@ -321,6 +331,66 @@ export async function getSpotPriceQuotes(assetIds: Array<number | null>): Promis
         });
       }
     }
+  }
+
+  const missingAsaIds = uniqueAsaIds.filter((assetId) => {
+    const cgId = asaMap[assetId];
+    if (cgId && typeof prices[cgId]?.usd === "number") {
+      return false;
+    }
+    if (tokenPricesByAssetId.has(assetId)) {
+      return false;
+    }
+    return true;
+  });
+
+  if (missingAsaIds.length > 0) {
+    const configuredTokenUrl = (() => {
+      const configuredBase = getCoinGeckoApiBase();
+      return configuredBase ? `${configuredBase}/simple/token_price/algorand` : null;
+    })();
+    const tokenEndpoints = Array.from(
+      new Set([configuredTokenUrl, DEFAULT_CG_TOKEN_PRICE_URL].filter((value): value is string => Boolean(value)))
+    );
+    for (const endpoint of tokenEndpoints) {
+      const fetched = await fetchCoinGeckoTokenPriceMap(endpoint, missingAsaIds);
+      if (Object.keys(fetched).length === 0) {
+        continue;
+      }
+
+      const source: SpotPriceSource = endpoint === configuredTokenUrl ? "configured" : "coingecko";
+      for (const [assetIdKey, usd] of Object.entries(fetched)) {
+        const assetId = Number(assetIdKey);
+        if (!Number.isInteger(assetId)) continue;
+        tokenPricesByAssetId.set(assetId, { usd, source });
+        spotCache.set(`token:${assetId}`, {
+          usd,
+          asOf: Date.now()
+        });
+      }
+
+      const fullyResolved = missingAsaIds.every((assetId) => tokenPricesByAssetId.has(assetId));
+      if (fullyResolved) {
+        break;
+      }
+    }
+  }
+
+  const dexEndpoint = env.DEXSCREENER_PRICE_API_URL ?? DEFAULT_DEXSCREENER_PRICE_URL;
+  const stillMissingForDex = missingAsaIds.filter((assetId) => !tokenPricesByAssetId.has(assetId));
+  if (stillMissingForDex.length > 0) {
+    await Promise.all(
+      stillMissingForDex.map(async (assetId) => {
+        const price = await fetchDexScreenerPriceUsd(assetId, dexEndpoint);
+        if (price !== null) {
+          dexPricesByAssetId.set(assetId, price);
+          spotCache.set(`dex:${assetId}`, {
+            usd: price,
+            asOf: Date.now()
+          });
+        }
+      })
+    );
   }
 
   const out: Record<string, SpotPriceQuote> = {};
@@ -342,16 +412,19 @@ export async function getSpotPriceQuotes(assetIds: Array<number | null>): Promis
 
     const asaId = Number(key);
     const cgId = asaMap[asaId];
+    const tokenDirect = tokenPricesByAssetId.get(asaId);
+    const tokenCache = spotCache.get(`token:${asaId}`);
     const directDex = dexPricesByAssetId.get(asaId);
     const dexCache = spotCache.get(`dex:${asaId}`);
     if (!cgId) {
-      const usd = directDex ?? dexCache?.usd ?? null;
-      const source: SpotPriceSource = directDex !== undefined ? "dexscreener" : dexCache ? "cache" : "missing";
+      const usd = tokenDirect?.usd ?? directDex ?? tokenCache?.usd ?? dexCache?.usd ?? null;
+      const source: SpotPriceSource =
+        tokenDirect?.source ?? (directDex !== undefined ? "dexscreener" : tokenCache || dexCache ? "cache" : "missing");
       out[key] = {
         usd,
         source,
         confidence: confidenceFromSource(source),
-        asOf: directDex !== undefined ? Date.now() : dexCache?.asOf ?? null
+        asOf: tokenDirect ? Date.now() : directDex !== undefined ? Date.now() : tokenCache?.asOf ?? dexCache?.asOf ?? null
       };
       continue;
     }
@@ -360,16 +433,21 @@ export async function getSpotPriceQuotes(assetIds: Array<number | null>): Promis
     const source =
       direct !== undefined
         ? (sourceByCoinId[cgId] ?? "missing")
+        : tokenDirect
+          ? tokenDirect.source
         : directDex !== undefined
           ? "dexscreener"
-          : cache || dexCache
+          : cache || tokenCache || dexCache
             ? "cache"
             : "missing";
     out[key] = {
-      usd: direct ?? directDex ?? cache?.usd ?? dexCache?.usd ?? null,
+      usd: direct ?? tokenDirect?.usd ?? directDex ?? cache?.usd ?? tokenCache?.usd ?? dexCache?.usd ?? null,
       source,
       confidence: confidenceFromSource(source),
-      asOf: direct !== undefined || directDex !== undefined ? Date.now() : cache?.asOf ?? dexCache?.asOf ?? null
+      asOf:
+        direct !== undefined || tokenDirect || directDex !== undefined
+          ? Date.now()
+          : cache?.asOf ?? tokenCache?.asOf ?? dexCache?.asOf ?? null
     };
   }
 

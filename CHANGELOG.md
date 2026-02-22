@@ -4,7 +4,11 @@ All notable changes to Strategos are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Overview asset list now includes two switch-style filters: `Hide 0 balance tokens` and `Hide no-price tokens`, replacing the old checkbox-only control and improving scanability in both themes (`src/components/dashboard/dashboard-client.tsx`, `locales/en.json`, `locales/es.json`) (2026-02-22 16:30 MST)
+
 ### Fixed
+- Restored ASA fallback pricing flow for unmapped Algorand assets: token-price and DexScreener fallbacks now run even when no CoinGecko ID mapping exists, fixing missed quotes such as X-NFT (`ASA 1164556102`) and similar unmapped assets (`src/lib/price/provider.ts`, `tests/price-provider.test.ts`) (2026-02-22 16:30 MST)
 - Portfolio history chart no longer prefers stale snapshot day-prices when fresh historical rows are available; `/api/portfolio/history` now always merges fresh rows over stored rows, and historical day-price cache no longer persists `null` fetch misses (so missing days are retried on subsequent requests instead of flattening long periods) (`src/lib/portfolio/daily-price-coverage.ts`, `src/lib/price/provider.ts`, `tests/daily-price-coverage.test.ts`, `tests/price-provider.test.ts`) (2026-02-22 00:00 MST)
 - Portfolio history valuation no longer reuses transaction execution prices as pseudo daily market prices; historical series now values assets from daily-close price data (with ALGO-proxy fallback for tALGO when direct history is unavailable), and Wallet Analytics aggregate value chart now reuses the same corrected history pipeline as Overview to avoid cross-tab divergence (`src/lib/portfolio/history.ts`, `src/components/dashboard/dashboard-client.tsx`, `tests/history.test.ts`) (2026-02-21 11:31 MST)
 - Tinyman/tALGO pricing model no longer forces `tALGO` to `ALGO` spot parity by default; spot quotes now include a DexScreener fallback for Algorand ASAs when CoinGecko/DefiLlama mapping is missing, improving tALGO/ALGO equivalence in DeFi valuation (`src/lib/price/provider.ts`, `src/lib/env.ts`, `tests/price-provider.test.ts`) (2026-02-20 14:10 MST)

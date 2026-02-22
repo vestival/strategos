@@ -64,6 +64,7 @@
     },
     "overview": {
       "hideZero": "Ocultar tokens con balance 0",
+      "hideNoPrice": "Ocultar tokens sin precio",
       "heldByWallets": "Distribucion por wallet",
       "noWalletBreakdown": "No hay detalle de balances por wallet para este activo.",
       "headers": {
