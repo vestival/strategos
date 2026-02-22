@@ -199,6 +199,31 @@ describe("price provider resilience", () => {
     expect(quotes["1164556102"].confidence).toBe("medium");
   });
 
+  it("uses default mapped CoinGecko id for X-NFT (ASA 1164556102)", async () => {
+    process.env.PRICE_API_URL = "https://invalid-price-endpoint.example/prices";
+    process.env.ASA_PRICE_MAP_JSON = "{}";
+
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("/simple/price") && url.includes("ids=x-nft") && url.includes("vs_currencies=usd")) {
+        return makeResponse({
+          "x-nft": {
+            usd: 0.6177
+          }
+        });
+      }
+      return makeResponse({}, false);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { getSpotPriceQuotes } = await import("@/lib/price/provider");
+    const quotes = await getSpotPriceQuotes([1164556102]);
+
+    expect(quotes["1164556102"].usd).toBe(0.6177);
+    expect(["configured", "coingecko"]).toContain(quotes["1164556102"].source);
+    expect(quotes["1164556102"].confidence).toBe("high");
+  });
+
   it("retries historical day fetch when a previous attempt returned null", async () => {
     process.env.PRICE_API_URL = "https://api.coingecko.com/api/v3/simple/price";
     const fetchMock = vi

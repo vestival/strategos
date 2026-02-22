@@ -18,7 +18,8 @@ const DEFAULT_ASA_CG_MAP: Record<number, string> = {
   // Liquid staking / staking derivatives
   793124631: "algorand", // gALGO
   694432641: "algorand", // gALGO3
-  1134696561: "xalgo" // xALGO
+  1134696561: "xalgo", // xALGO
+  1164556102: "x-nft" // X-NFT
 };
 
 type PriceMap = Record<string, { usd: number }>;
