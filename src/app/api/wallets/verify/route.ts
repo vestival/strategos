@@ -72,30 +72,46 @@ export async function POST(request: Request) {
   let verification: { ok: boolean; txId?: string } = { ok: false };
 
   if (parsed.data.signedTxnB64) {
+    const normalizedSignedB64 = parsed.data.signedTxnB64.replace(/-/g, "+").replace(/_/g, "/").replace(/\s+/g, "");
+    const signedTxnBytes = Buffer.from(normalizedSignedB64, "base64");
+    let decoded: ReturnType<typeof algosdk.decodeSignedTransaction>;
+
     try {
-      const normalizedSignedB64 = parsed.data.signedTxnB64.replace(/-/g, "+").replace(/_/g, "/");
-      const signedTxnBytes = Buffer.from(normalizedSignedB64, "base64");
-      const decoded = algosdk.decodeSignedTransaction(signedTxnBytes);
-      const sender = decoded.txn.sender.toString();
-      const receiver = decoded.txn.payment?.receiver?.toString() ?? "";
-      const noteText = decoded.txn.note ? Buffer.from(decoded.txn.note).toString("utf8") : "";
+      decoded = algosdk.decodeSignedTransaction(signedTxnBytes);
+    } catch {
+      return NextResponse.json({ error: "Invalid signed transaction payload" }, { status: 400 });
+    }
 
-      if (sender !== wallet.address) {
-        return NextResponse.json({ error: "Signed transaction sender does not match wallet" }, { status: 400 });
-      }
+    const sender = decoded.txn.sender.toString();
+    const receiver = decoded.txn.payment?.receiver?.toString() ?? "";
+    const noteText = decoded.txn.note ? Buffer.from(decoded.txn.note).toString("utf8") : "";
 
-      if (receiver !== env.ALGORAND_VERIFICATION_RECEIVER) {
-        return NextResponse.json({ error: "Signed transaction receiver mismatch" }, { status: 400 });
-      }
+    if (sender !== wallet.address) {
+      return NextResponse.json({ error: "Signed transaction sender does not match wallet" }, { status: 400 });
+    }
 
-      if (noteText !== challenge.noteText) {
-        return NextResponse.json({ error: "Signed transaction note mismatch" }, { status: 400 });
-      }
+    if (receiver !== env.ALGORAND_VERIFICATION_RECEIVER) {
+      return NextResponse.json({ error: "Signed transaction receiver mismatch" }, { status: 400 });
+    }
 
+    if (noteText !== challenge.noteText) {
+      return NextResponse.json({ error: "Signed transaction note mismatch" }, { status: 400 });
+    }
+
+    try {
       const submittedTxId = await submitSignedTransaction(new Uint8Array(signedTxnBytes));
       verification = { ok: true, txId: submittedTxId };
     } catch {
-      return NextResponse.json({ error: "Invalid signed transaction payload" }, { status: 400 });
+      // If the wallet already broadcasted the transaction, fallback verification can still succeed.
+      verification = await verifyByNoteTransaction({
+        walletAddress: wallet.address,
+        noteText: challenge.noteText,
+        createdAt: challenge.createdAt,
+        expiresAt: challenge.expiresAt
+      });
+      if (!verification.ok) {
+        return NextResponse.json({ error: "Signed transaction could not be submitted or found on-chain yet" }, { status: 400 });
+      }
     }
   } else if (parsed.data.txId) {
     verification = await verifyByNoteTransaction({
