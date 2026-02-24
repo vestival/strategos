@@ -9,6 +9,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { apiFetch } from "@/lib/api-client";
 import { shortAddress } from "@/lib/utils";
+import { extractSignedTransactionBytes } from "@/lib/wallet/signed-payload";
 
 type WalletListResponse = {
   wallets: Array<{
@@ -32,7 +33,7 @@ type PeraWallet = {
   connect: () => Promise<string[]>;
   reconnectSession?: () => Promise<string[]>;
   disconnect?: () => Promise<void>;
-  signTransaction: (txGroups: unknown, signerAddress?: string) => Promise<Uint8Array[]>;
+  signTransaction: (txGroups: unknown, signerAddress?: string) => Promise<unknown>;
 };
 
 function toBase64(bytes: Uint8Array): string {
@@ -121,7 +122,7 @@ export default function WalletsPage() {
           [[{ txn: unsignedTxn, signers: [connectedAddress] }]] as unknown,
           connectedAddress
         );
-        const signedTxn = signed[0];
+        const signedTxn = extractSignedTransactionBytes(signed);
 
         if (!signedTxn) {
           setStatusText(m.walletsPage.noSignedTxn);
@@ -131,7 +132,7 @@ export default function WalletsPage() {
         setStatusText(m.walletsPage.submittingSignedTxn);
         await verifyMutation.mutateAsync({
           challengeId: data.challengeId,
-          signedTxnB64: toBase64(new Uint8Array(signedTxn))
+          signedTxnB64: toBase64(signedTxn)
         });
       } catch (error) {
         setStatusText(error instanceof Error ? error.message : m.walletsPage.walletSigningFailed);
