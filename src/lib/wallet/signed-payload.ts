@@ -37,7 +37,8 @@ function decodeStringPayload(input: string): Uint8Array | null {
 }
 
 function extractFromObject(input: Record<string, unknown>): Uint8Array | null {
-  const candidateKeys = ["blob", "signedTxn", "signedTransaction", "txn", "transaction", "txns"];
+  // Do not pick generic `txn`/`transaction` keys because those are commonly unsigned payloads.
+  const candidateKeys = ["blob", "signedTxn", "signedTransaction", "txns"];
   for (const key of candidateKeys) {
     if (!(key in input)) continue;
     const extracted = extractSignedTransactionBytes(input[key]);
@@ -46,6 +47,51 @@ function extractFromObject(input: Record<string, unknown>): Uint8Array | null {
     }
   }
   return null;
+}
+
+export function extractSignedTransactionCandidates(input: unknown): Uint8Array[] {
+  const candidates: Uint8Array[] = [];
+
+  function pushCandidate(bytes: Uint8Array | null) {
+    if (bytes && bytes.length > 0) {
+      candidates.push(bytes);
+    }
+  }
+
+  function walk(value: unknown) {
+    if (!value) return;
+
+    if (value instanceof Uint8Array) {
+      pushCandidate(value);
+      return;
+    }
+
+    if (ArrayBuffer.isView(value)) {
+      pushCandidate(new Uint8Array(value.buffer, value.byteOffset, value.byteLength));
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item);
+      return;
+    }
+
+    if (typeof value === "string") {
+      pushCandidate(decodeStringPayload(value));
+      return;
+    }
+
+    if (typeof value === "object") {
+      const inputObject = value as Record<string, unknown>;
+      const keys = ["blob", "signedTxn", "signedTransaction", "txns"];
+      for (const key of keys) {
+        if (key in inputObject) walk(inputObject[key]);
+      }
+    }
+  }
+
+  walk(input);
+  return candidates;
 }
 
 export function extractSignedTransactionBytes(input: unknown): Uint8Array | null {

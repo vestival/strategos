@@ -9,7 +9,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { apiFetch } from "@/lib/api-client";
 import { shortAddress } from "@/lib/utils";
-import { extractSignedTransactionBytes } from "@/lib/wallet/signed-payload";
+import { extractSignedTransactionBytes, extractSignedTransactionCandidates } from "@/lib/wallet/signed-payload";
 
 type WalletListResponse = {
   wallets: Array<{
@@ -51,6 +51,15 @@ function fromBase64(base64: string): Uint8Array {
     out[i] = binary.charCodeAt(i);
   }
   return out;
+}
+
+function isDecodableSignedTransaction(bytes: Uint8Array): boolean {
+  try {
+    algosdk.decodeSignedTransaction(bytes);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export default function WalletsPage() {
@@ -122,7 +131,15 @@ export default function WalletsPage() {
           [[{ txn: unsignedTxn, signers: [connectedAddress] }]] as unknown,
           connectedAddress
         );
-        const signedTxn = extractSignedTransactionBytes(signed);
+        let signedTxn = extractSignedTransactionBytes(signed);
+        if (signedTxn && !isDecodableSignedTransaction(signedTxn)) {
+          signedTxn = null;
+        }
+
+        if (!signedTxn) {
+          const candidates = extractSignedTransactionCandidates(signed);
+          signedTxn = candidates.find((bytes) => isDecodableSignedTransaction(bytes)) ?? null;
+        }
 
         if (!signedTxn) {
           setStatusText(m.walletsPage.noSignedTxn);

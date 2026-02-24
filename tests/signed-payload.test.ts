@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { extractSignedTransactionBytes } from "@/lib/wallet/signed-payload";
+import { extractSignedTransactionBytes, extractSignedTransactionCandidates } from "@/lib/wallet/signed-payload";
 
 describe("extractSignedTransactionBytes", () => {
   it("returns bytes when input is Uint8Array", () => {
@@ -24,5 +24,18 @@ describe("extractSignedTransactionBytes", () => {
   it("returns null for unsupported payload", () => {
     expect(extractSignedTransactionBytes({ hello: "world" })).toBeNull();
     expect(extractSignedTransactionBytes(undefined)).toBeNull();
+  });
+
+  it("does not return generic unsigned txn wrapper keys", () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    expect(extractSignedTransactionBytes({ txn: bytes })).toBeNull();
+    expect(extractSignedTransactionBytes({ transaction: bytes })).toBeNull();
+  });
+
+  it("extracts all candidates from nested signed wrappers", () => {
+    const a = new Uint8Array([1]);
+    const b = new Uint8Array([2]);
+    const payload = [{ txns: [{ signedTxn: a }, { blob: b }] }];
+    expect(extractSignedTransactionCandidates(payload)).toEqual([a, b]);
   });
 });

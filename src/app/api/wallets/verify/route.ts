@@ -73,7 +73,8 @@ export async function POST(request: Request) {
 
   if (parsed.data.signedTxnB64) {
     try {
-      const signedTxnBytes = Buffer.from(parsed.data.signedTxnB64, "base64");
+      const normalizedSignedB64 = parsed.data.signedTxnB64.replace(/-/g, "+").replace(/_/g, "/");
+      const signedTxnBytes = Buffer.from(normalizedSignedB64, "base64");
       const decoded = algosdk.decodeSignedTransaction(signedTxnBytes);
       const sender = decoded.txn.sender.toString();
       const receiver = decoded.txn.payment?.receiver?.toString() ?? "";
