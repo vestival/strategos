@@ -62,6 +62,21 @@ function isDecodableSignedTransaction(bytes: Uint8Array): boolean {
   }
 }
 
+function parseErrorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof Error)) {
+    return fallback;
+  }
+  try {
+    const payload = JSON.parse(error.message) as { error?: string };
+    if (payload.error) {
+      return payload.error;
+    }
+  } catch {
+    // Non-JSON error message.
+  }
+  return error.message || fallback;
+}
+
 export default function WalletsPage() {
   const { m } = useLanguage();
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -87,7 +102,7 @@ export default function WalletsPage() {
       setStatusText(m.walletsPage.walletVerifiedAndLinked);
     },
     onError: (error) => {
-      setStatusText(error instanceof Error ? error.message : m.walletsPage.verificationFailed);
+      setStatusText(parseErrorMessage(error, m.walletsPage.verificationFailed));
     }
   });
 
@@ -111,7 +126,7 @@ export default function WalletsPage() {
       setStatusText(m.walletsPage.walletRemoved);
     },
     onError: (error) => {
-      setStatusText(error instanceof Error ? error.message : m.walletsPage.failedRemoveWallet);
+      setStatusText(parseErrorMessage(error, m.walletsPage.failedRemoveWallet));
     }
   });
 
@@ -152,11 +167,11 @@ export default function WalletsPage() {
           signedTxnB64: toBase64(signedTxn)
         });
       } catch (error) {
-        setStatusText(error instanceof Error ? error.message : m.walletsPage.walletSigningFailed);
+        setStatusText(parseErrorMessage(error, m.walletsPage.walletSigningFailed));
       }
     },
     onError: (error) => {
-      setStatusText(error instanceof Error ? error.message : m.walletsPage.challengeCreationFailed);
+      setStatusText(parseErrorMessage(error, m.walletsPage.challengeCreationFailed));
     }
   });
 
@@ -202,7 +217,7 @@ export default function WalletsPage() {
       setConnectedAddress(addr);
       setStatusText(m.walletsPage.walletConnected);
     } catch (error) {
-      setStatusText(error instanceof Error ? error.message : m.walletsPage.walletConnectionFailed);
+      setStatusText(parseErrorMessage(error, m.walletsPage.walletConnectionFailed));
     }
   }
 
@@ -311,6 +326,11 @@ export default function WalletsPage() {
         <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <h2 className="mb-3 text-lg font-medium">{m.walletsPage.linkedWallets}</h2>
           <div className="space-y-2">
+            {walletsQuery.isError && (
+              <p className="text-sm text-rose-600 dark:text-rose-300">
+                {parseErrorMessage(walletsQuery.error, m.walletsPage.failedLoadWallets)}
+              </p>
+            )}
             {walletsQuery.data?.wallets.map((wallet) => (
               <div className="flex items-start justify-between gap-3 rounded-md border border-slate-200 p-3 text-sm dark:border-slate-800" key={wallet.id}>
                 <div>
@@ -334,7 +354,9 @@ export default function WalletsPage() {
                 </button>
               </div>
             ))}
-            {!walletsQuery.data?.wallets.length && <p className="text-sm text-slate-500 dark:text-slate-400">{m.walletsPage.noLinkedWallets}</p>}
+            {!walletsQuery.isError && !walletsQuery.data?.wallets.length && (
+              <p className="text-sm text-slate-500 dark:text-slate-400">{m.walletsPage.noLinkedWallets}</p>
+            )}
           </div>
         </section>
       </div>

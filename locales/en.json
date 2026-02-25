@@ -216,6 +216,7 @@
     "walletDisconnected": "Wallet disconnected.",
     "walletVerifiedAndLinked": "Wallet verified and linked.",
     "verificationFailed": "Verification failed",
+    "failedLoadWallets": "Failed to load linked wallets. Please refresh.",
     "walletRemoved": "Wallet removed.",
     "failedRemoveWallet": "Failed to remove wallet"
   },
